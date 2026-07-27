@@ -9,7 +9,7 @@ import SkillsSection from './components/SkillsSection'
 
 function App() {
   return (
-    <>
+    <div id="top">
       <SiteHeader />
       <main>
         <HeroSection />
@@ -20,7 +20,7 @@ function App() {
         <ContactSection />
       </main>
       <SiteFooter />
-    </>
+    </div>
   )
 }
 

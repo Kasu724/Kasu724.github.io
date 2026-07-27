@@ -1,6 +1,6 @@
 function SiteFooter() {
   return (
-    <footer>
+    <footer className="site-footer">
       <p>Footer placeholder</p>
     </footer>
   )

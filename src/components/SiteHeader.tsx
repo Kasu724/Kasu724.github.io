@@ -1,8 +1,11 @@
 function SiteHeader() {
   return (
-    <header>
-      <p>Portfolio name placeholder</p>
-      <nav aria-label="Primary navigation">
+    <header className="site-header">
+      <a className="site-header__brand" href="#top">
+        Portfolio name placeholder
+      </a>
+
+      <nav className="site-header__nav" aria-label="Primary navigation">
         <a href="#about">About</a>
         <a href="#skills">Skills</a>
         <a href="#experience">Experience</a>
