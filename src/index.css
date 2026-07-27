@@ -1,4 +1,5 @@
 :root {
+  /* Shared design tokens keep later visual adjustments consistent. */
   --color-page: #11111b;
   --color-surface: #181825;
   --color-surface-elevated: #1e1e2e;
@@ -61,6 +62,7 @@
   box-sizing: border-box;
 }
 
+/* Document defaults and shared interactive states */
 html {
   color-scheme: dark;
 }
@@ -111,6 +113,7 @@ footer {
   margin-inline: auto;
 }
 
+/* Site header and primary navigation */
 header,
 footer {
   padding-block: var(--space-6);
@@ -182,6 +185,7 @@ footer {
   }
 }
 
+/* Hero and content sections */
 .hero {
   display: grid;
   align-content: center;
@@ -249,6 +253,7 @@ footer {
   }
 }
 
+/* Project collection and cards */
 .projects-section > h2 {
   margin-bottom: var(--space-6);
 }
@@ -334,6 +339,7 @@ footer {
   }
 }
 
+/* Contact panel and footer */
 .contact-section__panel {
   padding: clamp(var(--space-6), 6vw, var(--space-12));
   border: var(--border-width) solid var(--color-border);
@@ -425,6 +431,7 @@ p {
   color: var(--color-text-muted);
 }
 
+/* Preserve usability for visitors who request reduced motion. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
