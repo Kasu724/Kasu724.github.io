@@ -12,6 +12,7 @@ function App() {
     <div id="top">
       <SiteHeader />
       <main>
+        {/* Keep this order aligned with the primary navigation and portfolio structure */}
         <HeroSection />
         <AboutSection />
         <SkillsSection />

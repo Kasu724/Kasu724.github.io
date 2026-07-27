@@ -1,5 +1,6 @@
 import type { Project } from '../types/project'
 
+// Project cards are generated from this collection so content stays separate from layout
 export const projects: Project[] = [
   {
     title: 'Project 1 Placeholder',
