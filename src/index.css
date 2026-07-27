@@ -51,6 +51,10 @@
   --shadow-elevated: 0 12px 32px rgb(0 0 0 / 20%);
   --focus-ring-width: 2px;
   --focus-ring-offset: 3px;
+
+  --motion-duration-fast: 160ms;
+  --motion-ease-standard: ease;
+  --motion-distance-sm: 2px;
 }
 
 * {
@@ -159,6 +163,12 @@ footer {
   .site-header__nav a:hover {
     background: var(--color-surface-elevated);
   }
+
+  .project-card:hover {
+    transform: translateY(calc(var(--motion-distance-sm) * -1));
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-elevated);
+  }
 }
 
 @media (max-width: 34rem) {
@@ -256,6 +266,16 @@ footer {
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.project-card:focus-within {
+  transform: translateY(calc(var(--motion-distance-sm) * -1));
+  border-color: var(--color-accent);
+  background-color: var(--color-surface-elevated);
 }
 
 .project-card h3 {
@@ -403,4 +423,15 @@ h4 {
 p {
   max-width: 65ch;
   color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
