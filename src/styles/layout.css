@@ -1,0 +1,111 @@
+main,
+footer {
+  width: min(
+    calc(100% - (var(--page-inline-padding) * 2)),
+    var(--content-max-width)
+  );
+  margin-inline: auto;
+}
+
+/* Site header and primary navigation */
+footer {
+  padding-block: var(--space-6);
+}
+
+.site-header {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  width: 100%;
+  padding-block: 0;
+  background-color: color-mix(in srgb, var(--color-page) 78%, transparent);
+  backdrop-filter: blur(0.625rem);
+  -webkit-backdrop-filter: blur(0.625rem);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  width: min(
+    calc(100% - (var(--page-inline-padding) * 2)),
+    var(--content-max-width)
+  );
+  margin-inline: auto;
+  padding-block: var(--space-6);
+}
+
+.site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--text-meta);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-header__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.site-header__nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+@media (hover: hover) {
+  .site-header__nav a:hover {
+    background: var(--color-surface-elevated);
+  }
+}
+
+@media (max-width: 34rem) {
+  .site-header__inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .site-header__nav {
+    width: 100%;
+    gap: var(--space-3);
+  }
+}
+
+main {
+  display: grid;
+  gap: var(--section-block-spacing);
+  padding-block: var(--space-8) var(--space-16);
+}
+
+main > section {
+  padding-block: 0;
+  scroll-margin-top: var(--space-16);
+}
+
+.site-footer {
+  display: flex;
+  align-items: center;
+  min-height: 5rem;
+}
+
+.site-footer p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-meta);
+}
