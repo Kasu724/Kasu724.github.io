@@ -227,43 +227,89 @@
 }
 
 /* Skills */
-.skills-grid {
+.skills-groups {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-8);
 }
 
 .skill-group {
-  padding: var(--space-6);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  min-width: 0;
 }
 
 .skill-group h3 {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
   color: var(--color-accent);
   font-size: var(--text-meta);
   text-transform: uppercase;
 }
 
-.skill-group ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+.skills-grid {
+  display: grid;
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.skill-group li {
-  padding: var(--space-1) var(--space-2);
+.skill-card {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  min-width: 0;
+  min-height: 5.5rem;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
   border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.skill-card__icon-frame {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
   border-radius: var(--radius-sm);
-  color: var(--color-text-muted);
-  font-size: var(--text-meta);
+  background: color-mix(
+    in srgb,
+    var(--skill-icon-bg) 82%,
+    var(--color-surface-elevated)
+  );
+  box-shadow: inset 0 0 0 var(--border-width)
+    color-mix(in srgb, var(--skill-icon-bg) 60%, var(--color-border));
+}
+
+.skill-card__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
+
+.skill-card__name {
+  overflow-wrap: anywhere;
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+}
+
+@media (hover: hover) {
+  .skill-card:hover {
+    transform: translateY(calc(var(--motion-distance-sm) * -1));
+    border-color: var(--color-accent);
+    background-color: var(--color-page);
+  }
 }
 
 @media (min-width: 40rem) {
+  .skills-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 72rem) {
   .skills-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
