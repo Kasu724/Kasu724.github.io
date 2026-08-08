@@ -175,6 +175,12 @@
   margin-bottom: 0;
 }
 
+.about-section__content strong {
+  color: var(--color-accent);
+  font-weight: 700;
+  transition: color 160ms ease;
+}
+
 .about-section__links {
   display: flex;
   flex-wrap: wrap;
