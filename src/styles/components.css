@@ -164,6 +164,113 @@
   letter-spacing: -0.03em;
 }
 
+/* Experience timeline */
+.experience-section > h2,
+.experience-entry__title {
+  color: var(--color-accent);
+}
+
+.experience-timeline {
+  position: relative;
+  display: grid;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.experience-timeline::before {
+  position: absolute;
+  top: 0.875rem;
+  bottom: 0.875rem;
+  left: 0.375rem;
+  width: var(--border-width);
+  background: var(--color-border);
+  content: '';
+}
+
+.experience-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.75rem minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+.experience-entry__marker {
+  z-index: 1;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.5rem;
+  border: 0.1875rem solid var(--color-page);
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 var(--border-width) var(--color-accent);
+}
+
+.experience-entry__content {
+  min-width: 0;
+}
+
+.experience-entry__title {
+  margin-bottom: var(--space-1);
+  overflow-wrap: anywhere;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+}
+
+.experience-entry__meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: 600;
+  line-height: var(--leading-meta);
+}
+
+.experience-entry__role,
+.experience-entry__date {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.experience-entry__date {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.experience-entry__highlights {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.experience-entry__highlights li {
+  padding-left: var(--space-1);
+}
+
+.experience-entry__highlights strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+@media (max-width: 34rem) {
+  .experience-entry {
+    gap: var(--space-4);
+  }
+
+  .experience-entry__meta {
+    gap: var(--space-2);
+  }
+}
+
 /* About */
 .about-section__layout {
   display: grid;
@@ -173,6 +280,14 @@
 
 .about-section__content p {
   margin-bottom: 0;
+}
+
+.about-section__content .about-section__sentence {
+  display: block;
+}
+
+.about-section__content .about-section__sentence + .about-section__sentence {
+  margin-top: var(--space-2);
 }
 
 .about-section__content strong {
