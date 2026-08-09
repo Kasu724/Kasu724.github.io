@@ -124,7 +124,7 @@
   --font-display: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --font-body: var(--font-display);
 
-  --text-meta: 0.8125rem;
+  --text-meta: 0.925rem;
   --text-body: 1rem;
   --text-section-title: clamp(1.5rem, 3vw, 1.875rem);
   --text-hero: clamp(2.25rem, 6vw, 4.5rem);
