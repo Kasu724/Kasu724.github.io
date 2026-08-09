@@ -13,7 +13,9 @@ function AboutSection() {
             I’m a <strong>Computer Science student</strong> at <strong>Stevens Institute of
             Technology</strong> with a passion for building scalable software,
             intelligent systems, and quantitative tools that solve real-world
-            problems. My experience spans <strong>full-stack engineering</strong>, <strong>AI/ML</strong>, <strong>data
+            problems.
+            <br />
+            My experience spans <strong>full-stack engineering</strong>, <strong>AI/ML</strong>, <strong>data
             engineering</strong>, and <strong>quantitative finance</strong>, and I enjoy turning
             complex technical challenges into reliable, impactful products.
           </p>
