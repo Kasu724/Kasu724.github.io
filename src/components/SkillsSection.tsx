@@ -43,7 +43,6 @@ const skillGroups: SkillGroup[] = [
       { name: 'scikit-learn', image: '/tech-icons/scikit-learn.svg', iconBackground: '#4b2f16' },
       { name: 'Hugging Face', image: '/tech-icons/hugging-face.svg', iconBackground: '#6a5a16' },
       { name: 'OpenCV', image: '/tech-icons/opencv.svg', iconBackground: '#143e39' },
-      { name: 'RAG', image: '/tech-icons/rag.svg', iconBackground: '#e7e8e5' },
     ],
   },
   {
@@ -64,7 +63,7 @@ const skillGroups: SkillGroup[] = [
     skills: [
       { name: 'Docker', image: '/tech-icons/docker.svg', iconBackground: '#164563' },
       { name: 'Kubernetes', image: '/tech-icons/kubernetes.svg', iconBackground: '#243d7a' },
-      { name: 'Databricks', image: '/tech-icons/databricks.svg', iconBackground: '#f0dedd' },
+      { name: 'Databricks', image: '/tech-icons/databricks.svg', iconBackground: '#fff4f4' },
     ],
   },
   {
@@ -72,8 +71,8 @@ const skillGroups: SkillGroup[] = [
     name: 'Developer Tools',
     skills: [
       { name: 'Git', image: '/tech-icons/git.svg', iconBackground: '#5a2c20' },
-      { name: 'GitHub', image: '/tech-icons/github.svg', iconBackground: '#e7e8eb' },
-      { name: 'Linux (Ubuntu)', image: '/tech-icons/ubuntu.svg', iconBackground: '#3b2024' },
+      { name: 'GitHub', image: '/tech-icons/github.svg', iconBackground: '#f5f6f9' },
+      { name: 'Linux (Ubuntu)', image: '/tech-icons/linux.svg', iconBackground: '#f2f4f7' },
     ],
   },
 ]
