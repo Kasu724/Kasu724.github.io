@@ -164,6 +164,15 @@
   letter-spacing: -0.03em;
 }
 
+.about-section__content > h2 {
+  margin-bottom: var(--space-12);
+  font-family: var(--font-display);
+  font-size: var(--text-section-title);
+  font-weight: 600;
+  line-height: var(--leading-heading);
+  letter-spacing: -0.03em;
+}
+
 /* Experience timeline */
 .experience-section > h2,
 .experience-entry__title {
@@ -275,10 +284,11 @@
 .about-section__layout {
   display: grid;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--space-2);
 }
 
 .about-section__content p {
+  max-width: 80ch;
   margin-bottom: 0;
 }
 
@@ -287,7 +297,7 @@
 }
 
 .about-section__content .about-section__sentence + .about-section__sentence {
-  margin-top: var(--space-2);
+  margin-top: var(--space-6);
 }
 
 .about-section__content strong {
@@ -300,7 +310,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  margin-top: var(--space-6);
+  margin-top: var(--space-12);
 }
 
 .about-section__links a {
@@ -325,7 +335,8 @@
 
 .about-section__image {
   display: block;
-  width: min(100%, 20rem);
+  width: 20rem;
+  max-width: 100%;
   height: auto;
   justify-self: center;
   border: var(--border-width) solid var(--color-border);
@@ -334,7 +345,7 @@
 
 @media (min-width: 48rem) {
   .about-section__layout {
-    grid-template-columns: minmax(0, 3fr) minmax(15rem, 2fr);
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .about-section__image {
