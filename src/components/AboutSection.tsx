@@ -5,20 +5,20 @@ function AboutSection() {
       id="about"
       aria-labelledby="about-title"
     >
-      <h2 id="about-title">About</h2>
-
       <div className="about-section__layout">
         <div className="about-section__content">
+          <h2 id="about-title">About</h2>
+
           <p>
             <span className="about-section__sentence">
-            I’m a <strong>Computer Science student</strong> at <strong>Stevens Institute of
-            Technology</strong> with a passion for building scalable software, AI
-            systems, and quantitative tools that solve real-world problems.
+            I’m a <strong>Computer Science student</strong> at <strong>Stevens Institute of Technology</strong> with minors
+            in <strong>Quantitative Finance</strong> and <strong>Mathematics</strong>, and a passion for building scalable
+            software, AI systems, and quantitative tools that solve real-world problems.
             </span>
             <span className="about-section__sentence">
-            My experience spans <strong>full-stack engineering</strong>, <strong>AI/ML</strong>, <strong>data
-            engineering</strong>, and <strong>quantitative finance</strong>, and I enjoy turning
-            complex technical challenges into reliable, impactful products.
+            My experience spans <strong>full-stack engineering</strong>, <strong>AI/ML</strong>, <strong>data engineering</strong>, and
+            <strong> quantitative finance</strong>, and I enjoy turning complex technical challenges into
+            reliable, impactful products.
             </span>
           </p>
 
