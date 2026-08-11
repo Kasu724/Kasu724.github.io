@@ -45,13 +45,11 @@ function AboutSection() {
           </div>
         </div>
 
-        <div
-          className="about-section__image-placeholder"
-          role="img"
-          aria-label="Portrait placeholder"
-        >
-          Image placeholder
-        </div>
+        <img
+          className="about-section__image"
+          src={`${import.meta.env.BASE_URL}images/profile.jpg`}
+          alt="Portrait of Kevin"
+        />
       </div>
     </section>
   )
