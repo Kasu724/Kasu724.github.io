@@ -69,7 +69,7 @@ function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div className="site-footer__identity">
-          <span>© {new Date().getFullYear()} Kevin</span>
+          <span>{new Date().getFullYear()} Kevin Lui</span>
           <span className="site-footer__separator" aria-hidden="true">
             -
           </span>

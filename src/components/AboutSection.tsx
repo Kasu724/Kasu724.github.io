@@ -7,7 +7,9 @@ function AboutSection() {
     >
       <div className="about-section__layout">
         <div className="about-section__content">
-          <h2 id="about-title">About</h2>
+          <h2 id="about-title">
+            Hey! I'm <span className="about-section__name">Kevin Lui</span>
+          </h2>
 
           <p>
             <span className="about-section__sentence">
