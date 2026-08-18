@@ -100,6 +100,11 @@
   --color-page: var(--ctp-base);
   --color-surface: var(--ctp-base);
   --color-surface-elevated: var(--ctp-mantle);
+  --color-surface-subtle: color-mix(
+    in srgb,
+    var(--color-surface-elevated) 40%,
+    var(--color-page)
+  );
   --color-border: var(--ctp-surface0);
   --color-text: var(--ctp-text);
   --color-text-muted: var(--ctp-subtext0);
@@ -143,7 +148,8 @@
   --space-12: 3rem;
   --space-16: 4rem;
 
-  --content-max-width: 72rem;
+  --content-max-width: 70rem;
+  --header-footer-item-inset: 2rem;
   --page-inline-padding: 1rem;
   --section-block-spacing: clamp(3rem, 7vw, 4rem);
 
