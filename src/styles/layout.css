@@ -46,19 +46,32 @@ footer {
   min-height: 2.75rem;
   color: var(--color-text);
   font-family: var(--font-display);
-  font-size: var(--text-meta);
+  font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.site-header__brand > span:first-child {
+.site-header__home-path {
   color: var(--color-accent);
+}
+
+.site-header__home-path-link {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.site-header__home-path-link:is(:hover, :focus-visible) {
+  color: var(--color-accent);
+}
+
+.site-header__page-path {
+  color: var(--color-text);
 }
 
 .site-header__cursor {
   width: 0.62em;
   height: 1.08em;
-  background: var(--color-text);
+  background: var(--color-accent);
   animation: terminal-cursor-blink 3s ease-in-out infinite;
 }
 
@@ -135,7 +148,7 @@ main > section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-6);
   min-height: 4rem;
   padding: var(--space-4) var(--header-footer-item-inset);
   border: var(--border-width) solid var(--color-border);
@@ -160,15 +173,11 @@ main > section {
 .site-footer__identity,
 .site-footer__details {
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-6);
 }
 
 .site-footer__identity {
   color: var(--color-text);
-}
-
-.site-footer__separator {
-  color: var(--color-border);
 }
 
 .site-footer__status {
@@ -179,8 +188,22 @@ main > section {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  background: var(--ctp-text);
-  box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-text) 18%, transparent);
+  background: var(--ctp-green);
+  box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-green) 18%, transparent);
+  animation: site-footer-status-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes site-footer-status-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-green) 18%, transparent);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--ctp-green) 28%, transparent);
+  }
 }
 
 .site-footer__details {
@@ -190,14 +213,67 @@ main > section {
 .site-footer__metric,
 .site-footer__commit,
 .site-footer__social-link {
-  gap: var(--space-2);
+  gap: var(--space-3);
   color: var(--color-text);
   text-decoration: none;
 }
 
-.site-footer__metric > span:first-child,
-.site-footer__commit > span:first-child {
+.site-footer__tooltip {
+  position: relative;
+}
+
+.site-footer__tooltip::after {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + var(--space-2));
+  left: 50%;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-elevated);
+  color: var(--color-text);
+  content: attr(data-tooltip);
+  font-family: var(--font-display);
+  font-size: var(--text-meta);
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, var(--space-2));
+  transition:
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard),
+    visibility var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.site-footer__tooltip:is(:hover, :focus-visible)::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.site-footer__icon {
+  display: inline-flex;
+  width: 1.4rem;
+  height: 1.4rem;
+  align-items: center;
+  justify-content: center;
   color: var(--color-accent);
+  font-size: 1.25rem;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.site-footer__icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.site-footer__clock-icon {
+  width: 1.55rem;
+  height: 1.55rem;
 }
 
 .site-footer__social-link {
@@ -208,8 +284,8 @@ main > section {
 }
 
 .site-footer__social-link svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .site-footer__commit {
@@ -248,12 +324,8 @@ main > section {
     padding: var(--space-4);
   }
 
-  .site-footer__separator {
-    display: none;
-  }
-
   .site-footer__identity,
   .site-footer__details {
-    gap: var(--space-2) var(--space-3);
+    gap: var(--space-4) var(--space-6);
   }
 }

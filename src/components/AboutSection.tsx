@@ -1,3 +1,5 @@
+import { socialLinks } from '../data/socialLinks'
+
 function AboutSection() {
   return (
     <section
@@ -25,7 +27,12 @@ function AboutSection() {
           </p>
 
           <div className="about-section__links" aria-label="Social links">
-            <a href="#" aria-label="GitHub profile placeholder">
+            <a
+              href={socialLinks.github}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub profile"
+            >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="currentColor"
@@ -35,7 +42,12 @@ function AboutSection() {
               GitHub
             </a>
 
-            <a href="#" aria-label="LinkedIn profile placeholder">
+            <a
+              href={socialLinks.linkedin}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="LinkedIn profile"
+            >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="currentColor"
