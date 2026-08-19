@@ -11,40 +11,40 @@ function EducationSection() {
         <div className="education-entry__heading">
           <div>
             <h3>Stevens Institute of Technology</h3>
-            <p>Bachelor of Science in Computer Science</p>
-            <p className="education-entry__status">In progress</p>
+            <p className="education-entry__major">
+              Bachelor of Science in <span className="education-entry__field-name">Computer Science</span>
+            </p>
+            <p className="education-entry__minors">
+              Minors in <span className="education-entry__field-name">Quantitative Finance</span> ·{' '}
+              <span className="education-entry__field-name">Pure and Applied Mathematics</span>
+            </p>
           </div>
-          <p className="education-entry__date">Dates attended: —</p>
+          <div className="education-entry__meta" aria-label="Attendance details">
+            <p>Sep 2024 — Expected May 2028</p>
+            <p className="education-entry__location">Hoboken, NJ</p>
+          </div>
         </div>
-
-        <dl className="education-entry__summary">
-          <div>
-            <dt>Location</dt>
-            <dd>Hoboken, NJ</dd>
-          </div>
-          <div>
-            <dt>Honors</dt>
-            <dd>—</dd>
-          </div>
-          <div>
-            <dt>GPA</dt>
-            <dd>—</dd>
-          </div>
-          <div>
-            <dt>Scholarships</dt>
-            <dd>—</dd>
-          </div>
-        </dl>
 
         <dl className="education-entry__details">
           <div>
-            <dt>Minors</dt>
-            <dd>Quantitative Finance · Pure and Applied Mathematics</dd>
+            <dt>GPA</dt>
+            <dd>4.00 / 4.00</dd>
           </div>
           <div>
             <dt>Relevant Coursework</dt>
-            <dd>Data Structures · Algorithms · Enterprise Software Architecture & Design · Computer Architecture · Machine Learning · Principles of Programming Languages · Linear Algebra ·  Statistics</dd>
+            <dd>Data Structures · Algorithms · Enterprise Software Architecture & Design · Computer Architecture · Machine Learning · Principles of Programming Languages · Linear Algebra · Statistics</dd>
           </div>
+          <div>
+            <dt>Honors &amp; Scholarships</dt>
+            <dd>
+              <ul className="education-entry__list">
+                <li>The Lawrence T. Babbio '66 Pinnacle Scholars Program</li>
+                <li>Dean's List</li>
+                <li>Edwin A. Stevens Scholarship</li>
+                <li>Stevens Presidential Scholarship</li>
+              </ul>
+            </dd>
+            </div>
         </dl>
       </article>
     </section>
