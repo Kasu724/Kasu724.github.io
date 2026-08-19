@@ -382,7 +382,6 @@
   margin-bottom: var(--space-3);
   color: var(--color-accent);
   font-size: var(--text-meta);
-  text-transform: uppercase;
 }
 
 .skills-grid {
@@ -619,10 +618,13 @@
 }
 
 .education-entry__details dt {
-  color: var(--color-text);
+  color: var(--color-accent);
   font-size: var(--text-meta);
   font-weight: 700;
-  text-transform: uppercase;
+}
+
+.education-entry__details dt.education-entry__subheading {
+  color: var(--color-accent);
 }
 
 .education-entry__details dd {

@@ -31,12 +31,12 @@ function EducationSection() {
             <dd>4.00 / 4.00</dd>
           </div>
           <div>
-            <dt>Relevant Coursework</dt>
+            <dt className="education-entry__subheading">Relevant Coursework</dt>
             <dd>Data Structures · Algorithms · Enterprise Software Architecture & Design · Computer Architecture · Machine Learning · Principles of Programming Languages · Linear Algebra · Statistics</dd>
           </div>
           <div>
-            <dt>Honors &amp; Scholarships</dt>
-            <dd>
+            <dt className="education-entry__subheading">Honors &amp; Scholarships</dt>
+              <dd>
               <ul className="education-entry__list">
                 <li>The Lawrence T. Babbio '66 Pinnacle Scholars Program</li>
                 <li>Dean's List</li>
