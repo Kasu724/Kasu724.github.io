@@ -36,6 +36,8 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          VITE_DEPLOYMENT_COMMIT: ${{ github.sha }}
         run: npm run build
 
       - name: Configure Pages

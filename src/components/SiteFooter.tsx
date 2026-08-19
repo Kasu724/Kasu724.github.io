@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
 
-const deploymentCommit = import.meta.env.VITE_DEPLOYMENT_COMMIT ?? '4d65931'
-const deploymentCommitUrl = `https://github.com/Kasu724/Kasu724.github.io/commit/${deploymentCommit}`
+const deploymentCommitSha = import.meta.env.VITE_DEPLOYMENT_COMMIT
+const deploymentCommit = deploymentCommitSha?.slice(0, 7) ?? 'unknown'
+const deploymentCommitUrl = deploymentCommitSha
+  ? `https://github.com/Kasu724/Kasu724.github.io/commit/${deploymentCommitSha}`
+  : undefined
 const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE ?? 'kasu724'
 const goatCounterTotalPath = 'TOTAL'
 const timeOnSiteStorageKey = 'kasu724-portfolio-time-on-site'
