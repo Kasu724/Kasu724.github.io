@@ -23,8 +23,8 @@ footer {
   width: 100%;
   padding-block: 0;
   background-color: color-mix(in srgb, var(--color-page) 78%, transparent);
-  backdrop-filter: blur(0.625rem);
   -webkit-backdrop-filter: blur(0.625rem);
+  backdrop-filter: blur(0.625rem);
   border-bottom: var(--border-width) solid var(--color-border);
 }
 

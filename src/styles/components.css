@@ -48,7 +48,6 @@
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-surface-elevated) 96%, transparent);
   box-shadow: var(--shadow-elevated);
-  backdrop-filter: blur(0.625rem);
   -webkit-backdrop-filter: blur(0.625rem);
 }
 
