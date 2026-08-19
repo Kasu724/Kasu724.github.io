@@ -13,12 +13,20 @@ const pageDetails: Record<Page, { label: string; href: string; path: string }> =
 
 function SiteHeader({ currentPage }: SiteHeaderProps) {
   const currentPath = pageDetails[currentPage].path
+  const pagePath = currentPath.slice('$HOME'.length)
 
   return (
     <header className="site-header">
       <div className="site-header__inner">
         <div className="site-header__brand" aria-label={`Current path: ${currentPath}`}>
-          <span>{currentPath}</span>
+          {currentPage === 'home' ? (
+            <span className="site-header__home-path">$HOME</span>
+          ) : (
+            <a className="site-header__home-path-link" href="/">
+              $HOME
+            </a>
+          )}
+          <span className="site-header__page-path">{pagePath}</span>
           <span className="site-header__cursor" aria-hidden="true" />
         </div>
 

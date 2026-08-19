@@ -1,20 +1,80 @@
 import { useEffect, useState } from 'react'
+import { socialLinks } from '../data/socialLinks'
 
 const deploymentCommit = import.meta.env.VITE_DEPLOYMENT_COMMIT ?? '4d65931'
 const deploymentCommitUrl = `https://github.com/Kasu724/Kasu724.github.io/commit/${deploymentCommit}`
-const viewCountStorageKey = 'kasu724-portfolio-view-count'
+const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE ?? 'kasu724'
+const goatCounterTotalPath = 'TOTAL'
+const timeOnSiteStorageKey = 'kasu724-portfolio-time-on-site'
 
-function getNextViewCount() {
+type GoatCounter = {
+  no_onload?: boolean
+  count?: (variables: { path: string }) => void
+}
+
+type GoatCounterWindow = Window & { goatcounter?: GoatCounter }
+
+let goatCounterScriptPromise: Promise<void> | null = null
+let goatCounterPageviewSent = false
+
+function getStoredTimeOnSite() {
   try {
-    const storedViewCount = Number.parseInt(
-      window.localStorage.getItem(viewCountStorageKey) ?? '0',
+    const storedTime = Number.parseInt(
+      window.localStorage.getItem(timeOnSiteStorageKey) ?? '0',
       10,
     )
 
-    return (Number.isFinite(storedViewCount) ? storedViewCount : 0) + 1
+    return Number.isFinite(storedTime) && storedTime >= 0 ? storedTime : 0
   } catch {
-    return 1
+    return 0
   }
+}
+
+function loadGoatCounter() {
+  if (!goatCounterCode) {
+    return Promise.reject(new Error('VITE_GOATCOUNTER_CODE is not configured'))
+  }
+
+  const goatCounterWindow = window as GoatCounterWindow
+
+  if (goatCounterWindow.goatcounter?.count) {
+    return Promise.resolve()
+  }
+
+  if (goatCounterScriptPromise) {
+    return goatCounterScriptPromise
+  }
+
+  goatCounterWindow.goatcounter = { no_onload: true }
+  goatCounterScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.async = true
+    script.src = 'https://gc.zgo.at/count.js'
+    script.dataset.goatcounter = `https://${goatCounterCode}.goatcounter.com/count`
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Unable to load GoatCounter'))
+    document.head.appendChild(script)
+  })
+
+  return goatCounterScriptPromise
+}
+
+async function getGoatCounterViewCount() {
+  if (!goatCounterCode) {
+    return null
+  }
+
+  const counterUrl = `https://${goatCounterCode}.goatcounter.com/counter/${goatCounterTotalPath}.json`
+  const response = await fetch(counterUrl, { cache: 'no-store' })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const data = (await response.json()) as { count?: string | number }
+  const count = Number.parseInt(String(data.count ?? '').replaceAll(',', ''), 10)
+
+  return Number.isFinite(count) ? count : null
 }
 
 function formatDuration(totalSeconds: number) {
@@ -47,32 +107,126 @@ function LinkedinIcon() {
   )
 }
 
+function EyeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+        d="M2.5 12s3.3-5 9.5-5 9.5 5 9.5 5"
+      />
+      <circle
+        cx="12"
+        cy="15.5"
+        r="2.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  )
+}
+
+function ClockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.8"
+        d="M12 12V7.5M12 12h4.25"
+      />
+    </svg>
+  )
+}
+
+function CommitIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.8"
+        d="M12 2v7M12 15v7"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r="3.4"
+        fill="var(--color-surface-elevated)"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  )
+}
+
 function SiteFooter() {
-  const [timeOnSite, setTimeOnSite] = useState(0)
-  const [viewCount] = useState(getNextViewCount)
+  const [timeOnSite, setTimeOnSite] = useState(getStoredTimeOnSite)
+  const [viewCount, setViewCount] = useState<number | null>(null)
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setTimeOnSite((currentTime) => currentTime + 1)
     }, 1000)
 
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
     try {
-      window.localStorage.setItem(viewCountStorageKey, String(viewCount))
+      window.localStorage.setItem(timeOnSiteStorageKey, String(timeOnSite))
     } catch {
       // Local storage can be unavailable in private browsing contexts.
     }
+  }, [timeOnSite])
 
-    return () => window.clearInterval(timer)
-  }, [viewCount])
+  useEffect(() => {
+    if (!goatCounterCode) {
+      return undefined
+    }
+
+    let active = true
+
+    void loadGoatCounter()
+      .then(() => {
+        const goatCounterWindow = window as GoatCounterWindow
+
+        if (!goatCounterPageviewSent) {
+          goatCounterWindow.goatcounter?.count?.({ path: window.location.pathname })
+          goatCounterPageviewSent = true
+        }
+
+        return new Promise<void>((resolve) => window.setTimeout(resolve, 1000))
+      })
+      .then(() => getGoatCounterViewCount())
+      .then((count) => {
+        if (active) {
+          setViewCount(count)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setViewCount(null)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div className="site-footer__identity">
           <span>{new Date().getFullYear()} Kevin Lui</span>
-          <span className="site-footer__separator" aria-hidden="true">
-            -
-          </span>
           <span className="site-footer__status">
             <span className="site-footer__status-dot" aria-hidden="true" />
             All Services Nominal
@@ -80,35 +234,33 @@ function SiteFooter() {
         </div>
 
         <div className="site-footer__details">
-          <span className="site-footer__metric">
-            <span aria-hidden="true">◷</span>
+          <span
+            className="site-footer__metric site-footer__tooltip"
+            data-tooltip="How long you've been on my site"
+          >
+            <span className="site-footer__icon site-footer__clock-icon" aria-hidden="true"><ClockIcon /></span>
             <span className="sr-only">Time on site:</span> {formatDuration(timeOnSite)}
           </span>
-          <span className="site-footer__separator" aria-hidden="true">
-            -
-          </span>
-          <span className="site-footer__metric">
-            <span aria-hidden="true">◉</span>
-            <span className="sr-only">Site views:</span> {viewCount.toLocaleString()} views
-          </span>
-          <span className="site-footer__separator" aria-hidden="true">
-            -
+          <span
+            className="site-footer__metric site-footer__tooltip"
+            data-tooltip="Number of views on my site"
+          >
+            <span className="site-footer__icon" aria-hidden="true"><EyeIcon /></span>
+            <span className="sr-only">Site views:</span> {viewCount?.toLocaleString() ?? '—'} views
           </span>
           <a
-            className="site-footer__commit"
+            className="site-footer__commit site-footer__tooltip"
             href={deploymentCommitUrl}
             target="_blank"
             rel="noreferrer"
+            data-tooltip="Current deployment commit (click to view)"
           >
-            <span aria-hidden="true">⌘</span>
+            <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
             <span className="sr-only">Deployment commit:</span> {deploymentCommit}
           </a>
-          <span className="site-footer__separator" aria-hidden="true">
-            -
-          </span>
           <a
             className="site-footer__social-link"
-            href="https://github.com/Kasu724"
+            href={socialLinks.github}
             target="_blank"
             rel="noreferrer"
             aria-label="GitHub profile"
@@ -117,8 +269,8 @@ function SiteFooter() {
           </a>
           <a
             className="site-footer__social-link"
-            href="#"
-            aria-label="LinkedIn profile placeholder"
+            href={socialLinks.linkedin}
+            aria-label="LinkedIn profile"
           >
             <LinkedinIcon />
           </a>
