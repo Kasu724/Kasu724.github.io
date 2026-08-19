@@ -49,6 +49,7 @@
   background: color-mix(in srgb, var(--color-surface-elevated) 96%, transparent);
   box-shadow: var(--shadow-elevated);
   -webkit-backdrop-filter: blur(0.625rem);
+  backdrop-filter: blur(0.625rem);
 }
 
 .theme-menu fieldset {
