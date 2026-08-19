@@ -557,61 +557,72 @@
 }
 
 /* Education */
-.education-card {
-  padding: clamp(var(--space-6), 5vw, var(--space-8));
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-subtle);
-}
-
-.education-card__heading {
+.education-entry__heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-6);
-  padding-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
   border-bottom: var(--border-width) solid var(--color-border);
 }
 
-.education-card__heading h3 {
+.education-entry__heading h3 {
   margin-bottom: var(--space-2);
   color: var(--color-accent);
   font-size: clamp(1.1rem, 2.3vw, 1.4rem);
 }
 
-.education-card__heading p,
-.education-card__details dd {
+.education-entry__heading p,
+.education-entry__summary dd,
+.education-entry__details dd {
   margin: 0;
 }
 
-.education-card__status {
-  flex: none;
-  padding: var(--space-1) var(--space-2);
-  border: var(--border-width) solid var(--color-accent);
-  border-radius: var(--radius-sm);
+.education-entry__status {
+  margin-top: var(--space-2) !important;
   color: var(--color-accent);
   font-size: var(--text-meta);
 }
 
-.education-card__details {
+.education-entry__date {
+  flex: none;
+  color: var(--color-text);
+  font-size: var(--text-meta);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.education-entry__summary,
+.education-entry__details {
   display: grid;
   gap: var(--space-6);
   margin: var(--space-6) 0 0;
 }
 
-.education-card__details div {
+.education-entry__summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.education-entry__summary div,
+.education-entry__details div {
   display: grid;
   gap: var(--space-2);
 }
 
-.education-card__details dt {
+.education-entry__summary dt,
+.education-entry__details dt {
   color: var(--color-text);
   font-size: var(--text-meta);
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.education-card__details dd {
+.education-entry__summary dd,
+.education-entry__details dd {
+  color: var(--color-accent);
+}
+
+.education-entry__details dd {
   color: var(--color-text-muted);
 }
 
@@ -674,7 +685,7 @@
 }
 
 @media (min-width: 42rem) {
-  .education-card__details {
+  .education-entry__details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -686,8 +697,16 @@
 }
 
 @media (max-width: 34rem) {
-  .education-card__heading {
+  .education-entry__heading {
     flex-direction: column;
+  }
+
+  .education-entry__date {
+    text-align: left;
+  }
+
+  .education-entry__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
