@@ -37,7 +37,6 @@ jobs:
 
       - name: Build
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           VITE_DEPLOYMENT_COMMIT: ${{ github.sha }}
         run: npm run build
 

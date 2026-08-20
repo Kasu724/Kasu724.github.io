@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
+import { useServiceStatus } from './useServiceStatus'
 
 const deploymentCommit = deploymentCommitSha?.slice(0, 7) ?? 'unknown'
 const deploymentCommitUrl = deploymentCommitSha
@@ -175,8 +176,14 @@ function CommitIcon() {
 }
 
 function SiteFooter() {
+  const { status, setServiceHealth } = useServiceStatus()
   const [timeOnSite, setTimeOnSite] = useState(getStoredTimeOnSite)
   const [viewCount, setViewCount] = useState<number | null>(null)
+
+  const serviceValues = Object.values(status)
+  const servicesHealthy = serviceValues.every((health) => health === true)
+  const serviceFailed = serviceValues.some((health) => health === false)
+  const serviceState = servicesHealthy ? 'nominal' : serviceFailed ? 'degraded' : 'checking'
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -213,26 +220,34 @@ function SiteFooter() {
       .catch(() => undefined)
 
     void getGoatCounterViewCount(controller.signal)
-      .then(setViewCount)
+      .then((count) => {
+        setViewCount(count)
+        setServiceHealth('viewCount', count !== null)
+      })
       .catch((error) => {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           setViewCount(null)
+          setServiceHealth('viewCount', false)
         }
       })
 
     return () => {
       controller.abort()
     }
-  }, [])
+  }, [setServiceHealth])
 
   return (
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div className="site-footer__identity">
           <span>{new Date().getFullYear()} Kevin Lui</span>
-          <span className="site-footer__status">
+          <span
+            className={`site-footer__status site-footer__status--${serviceState}`}
+            role="status"
+            aria-live="polite"
+          >
             <span className="site-footer__status-dot" aria-hidden="true" />
-            All Services Nominal
+            {servicesHealthy ? 'All Services Nominal' : serviceFailed ? 'Service Issue Detected' : 'Checking Services'}
           </span>
         </div>
 

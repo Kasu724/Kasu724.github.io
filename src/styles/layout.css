@@ -193,6 +193,29 @@ main > section {
   animation: site-footer-status-pulse 3.5s ease-in-out infinite;
 }
 
+.site-footer__status--degraded {
+  color: var(--ctp-red);
+}
+
+.site-footer__status--degraded .site-footer__status-dot {
+  background: var(--ctp-red);
+  box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-red) 18%, transparent);
+  animation: site-footer-status-alert 900ms ease-in-out infinite;
+}
+
+@keyframes site-footer-status-alert {
+  0%,
+  100% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-red) 18%, transparent);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 0.42rem color-mix(in srgb, var(--ctp-red) 32%, transparent);
+  }
+}
+
 @keyframes site-footer-status-pulse {
   0%,
   100% {

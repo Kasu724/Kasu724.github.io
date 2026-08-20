@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
+import { getCachedRecentCommits, loadRecentCommits } from '../data/githubCommits'
 import LocationMap from './LocationMap'
-import { recentCommits } from 'virtual:site-metadata'
 
 const githubProfileUrl = 'https://github.com/Kasu724'
 
@@ -34,6 +35,34 @@ function ArrowIcon() {
 }
 
 function ExtraInfoSection() {
+  const [recentCommits, setRecentCommits] = useState(getCachedRecentCommits)
+  const [commitsLoading, setCommitsLoading] = useState(recentCommits.length === 0)
+  const [commitsUnavailable, setCommitsUnavailable] = useState(false)
+
+  useEffect(() => {
+    let active = true
+
+    void loadRecentCommits()
+      .then((commits) => {
+        if (!active) return
+
+        setRecentCommits(commits)
+        setCommitsUnavailable(commits.length === 0)
+      })
+      .catch(() => {
+        if (!active) return
+
+        setCommitsUnavailable(true)
+      })
+      .finally(() => {
+        if (active) setCommitsLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <section className="content-section extra-info-section" id="extra-info" aria-labelledby="extra-info-title">
       <h2 id="extra-info-title">Extra Info</h2>
@@ -62,7 +91,11 @@ function ExtraInfoSection() {
                 </span>
               </a>
             )) : (
-              <p className="commit-list__message">Commit activity is temporarily unavailable.</p>
+              <p className="commit-list__message">
+                {commitsLoading && !commitsUnavailable
+                  ? 'Fetching the latest activity…'
+                  : 'Commit activity is temporarily unavailable.'}
+              </p>
             )}
           </div>
 
