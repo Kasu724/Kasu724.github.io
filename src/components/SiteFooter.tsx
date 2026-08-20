@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
+import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
 
-const deploymentCommitSha = import.meta.env.VITE_DEPLOYMENT_COMMIT
 const deploymentCommit = deploymentCommitSha?.slice(0, 7) ?? 'unknown'
 const deploymentCommitUrl = deploymentCommitSha
   ? `https://github.com/Kasu724/Kasu724.github.io/commit/${deploymentCommitSha}`
   : undefined
-const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE ?? 'kasu724'
+const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE?.trim() || 'kasu724'
 const goatCounterTotalPath = 'TOTAL'
 const timeOnSiteStorageKey = 'kasu724-portfolio-time-on-site'
 
 type GoatCounter = {
+  allow_local?: boolean
   no_onload?: boolean
   count?: (variables: { path: string }) => void
 }
@@ -48,7 +49,10 @@ function loadGoatCounter() {
     return goatCounterScriptPromise
   }
 
-  goatCounterWindow.goatcounter = { no_onload: true }
+  goatCounterWindow.goatcounter = {
+    allow_local: import.meta.env.DEV,
+    no_onload: true,
+  }
   goatCounterScriptPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script')
     script.async = true
@@ -62,13 +66,13 @@ function loadGoatCounter() {
   return goatCounterScriptPromise
 }
 
-async function getGoatCounterViewCount() {
+async function getGoatCounterViewCount(signal: AbortSignal) {
   if (!goatCounterCode) {
     return null
   }
 
   const counterUrl = `https://${goatCounterCode}.goatcounter.com/counter/${goatCounterTotalPath}.json`
-  const response = await fetch(counterUrl, { cache: 'no-store' })
+  const response = await fetch(counterUrl, { cache: 'no-store', signal })
 
   if (!response.ok) {
     return null
@@ -195,7 +199,7 @@ function SiteFooter() {
       return undefined
     }
 
-    let active = true
+    const controller = new AbortController()
 
     void loadGoatCounter()
       .then(() => {
@@ -205,23 +209,19 @@ function SiteFooter() {
           goatCounterWindow.goatcounter?.count?.({ path: window.location.pathname })
           goatCounterPageviewSent = true
         }
+      })
+      .catch(() => undefined)
 
-        return new Promise<void>((resolve) => window.setTimeout(resolve, 1000))
-      })
-      .then(() => getGoatCounterViewCount())
-      .then((count) => {
-        if (active) {
-          setViewCount(count)
-        }
-      })
-      .catch(() => {
-        if (active) {
+    void getGoatCounterViewCount(controller.signal)
+      .then(setViewCount)
+      .catch((error) => {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
           setViewCount(null)
         }
       })
 
     return () => {
-      active = false
+      controller.abort()
     }
   }, [])
 
@@ -273,6 +273,8 @@ function SiteFooter() {
           <a
             className="site-footer__social-link"
             href={socialLinks.linkedin}
+            target="_blank"
+            rel="noreferrer"
             aria-label="LinkedIn profile"
           >
             <LinkedinIcon />

@@ -1,5 +1,5 @@
 import AboutSection from './components/AboutSection'
-import ContactSection from './components/ContactSection'
+import ExtraInfoSection from './components/ExtraInfoSection'
 import EducationSection from './components/EducationSection'
 import ExperienceSection from './components/ExperienceSection'
 import ProjectsSection from './components/ProjectsSection'
@@ -28,7 +28,7 @@ function HomePage() {
       <ExperienceSection />
       <ProjectsSection />
       <EducationSection />
-      <ContactSection />
+      <ExtraInfoSection />
     </main>
   )
 }
