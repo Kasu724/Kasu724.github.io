@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Map as LeafletMap } from 'leaflet'
+import { useServiceStatus } from './useServiceStatus'
 
 const hobokenCoordinates: [number, number] = [40.74325, -74.0324]
 const mapZoom = 15  
@@ -27,6 +28,7 @@ function getHobokenTime() {
 }
 
 function LocationMap() {
+  const { setServiceHealth } = useServiceStatus()
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<LeafletMap | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
@@ -53,19 +55,24 @@ function LocationMap() {
         touchZoom: true,
       }).setView(hobokenCoordinates, mapZoom)
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
         attribution: '',
         keepBuffer: 4,
         updateWhenIdle: false,
         updateWhenZooming: false,
-      }).addTo(map)
+      })
+      tileLayer.on('tileerror', () => setServiceHealth('location', false))
+      tileLayer.addTo(map)
 
       mapInstanceRef.current = map
       setMapLoaded(true)
+      setServiceHealth('location', true)
     }
 
-    void initializeMap()
+    void initializeMap().catch(() => {
+      setServiceHealth('location', false)
+    })
 
     return () => {
       destroyed = true
@@ -73,7 +80,7 @@ function LocationMap() {
       mapInstanceRef.current?.remove()
       mapInstanceRef.current = null
     }
-  }, [])
+  }, [setServiceHealth])
 
   const hour = Number(currentTime.split(':')[0])
   const isDaytime = hour >= 6 && hour < 21
