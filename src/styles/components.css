@@ -155,7 +155,7 @@
 
 /* Content sections */
 .content-section > h2,
-.contact-section__panel > h2 {
+.extra-info-section > h2 {
   margin-bottom: var(--space-6);
   font-family: var(--font-display);
   font-size: var(--text-section-title);
@@ -719,14 +719,351 @@
 }
 
 /* Contact */
-.contact-section__panel {
-  padding: clamp(var(--space-6), 6vw, var(--space-12));
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-elevated);
-  box-shadow: var(--shadow-elevated);
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 
-.contact-section__panel p {
+.contact-card {
+  display: flex;
+  min-width: 0;
+  min-height: 14rem;
+  flex-direction: column;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  box-shadow: var(--shadow-elevated);
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.contact-card--commits {
+  grid-column: span 2;
+}
+
+.contact-card__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.contact-card__heading h3 {
   margin: 0;
+  font-size: 1rem;
+}
+
+.contact-card__heading--button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.contact-card__icon {
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: none;
+  color: var(--color-accent);
+}
+
+.contact-card svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.commit-list {
+  display: grid;
+  align-content: start;
+  gap: 0;
+  min-height: 6rem;
+}
+
+.commit-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: 0.2rem var(--space-1);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.commit-item__summary {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.45em;
+  overflow: hidden;
+}
+
+.commit-item__repository {
+  flex: none;
+  color: var(--color-text);
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.commit-item__message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commit-item__meta {
+  display: flex;
+  gap: var(--space-3);
+  color: var(--color-text);
+  font-size: inherit;
+  white-space: nowrap;
+}
+
+.commit-item__meta span {
+  color: var(--accent-green);
+}
+
+.commit-list__message {
+  margin: var(--space-2);
+}
+
+.contact-card__footer-link {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.contact-card__footer-link svg,
+.contact-card__actions svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.contact-card > p {
+  margin-bottom: var(--space-6);
+}
+
+.contact-card__actions {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  margin-block: auto;
+}
+
+.contact-card__actions a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--text-meta);
+  text-decoration: none;
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.contact-card__actions .contact-card__email {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-card__actions .contact-card__linkedin {
+  width: 100%;
+}
+
+.contact-card__action-icon {
+  display: inline-grid;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: 0 0 1.35rem;
+  place-items: center;
+}
+
+.contact-card__action-icon svg {
+  display: block;
+}
+
+.contact-card svg.contact-card__linkedin-icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: none;
+}
+
+.contact-card svg.contact-card__mail-icon {
+  width: 100%;
+  height: 100%;
+  stroke-width: 2.5;
+  transform: translateX(-0.1rem);
+}
+
+.contact-card__actions a:is(:hover, :focus-visible) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.contact-card__map {
+  position: relative;
+  min-height: 6.5rem;
+  flex: 1;
+  overflow: hidden;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+}
+
+.contact-card__map-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface-elevated);
+}
+
+.contact-card__map-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+.contact-card__map :is(.leaflet-container, .leaflet-tile-container, .leaflet-pane) {
+  background: var(--color-surface-elevated);
+}
+
+.contact-card__location-details {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.contact-card .contact-card__place {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.contact-card__clock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.contact-card__clock > span {
+  display: inline-flex;
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.contact-card__sun {
+  color: var(--accent-yellow);
+}
+
+.contact-card__moon {
+  color: var(--accent-blue);
+}
+
+@media (hover: hover) {
+  .contact-card:hover {
+    transform: translateY(calc(var(--motion-distance-sm) * -1));
+    border-color: var(--color-accent);
+    background: var(--color-surface-elevated);
+  }
+
+  .commit-item:hover,
+  .contact-card__heading--button:hover,
+  .contact-card__place:hover {
+    background: var(--color-page);
+    color: var(--color-accent);
+  }
+
+  .contact-card__heading--button:hover,
+  .contact-card__place:hover {
+    background: transparent;
+  }
+
+}
+
+@media (max-width: 56rem) {
+  .contact-card--commits {
+    grid-column: 1 / -1;
+  }
+
+  .contact-card--contact,
+  .contact-card--location {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 36rem) {
+  .contact-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contact-card--commits,
+  .contact-card--contact,
+  .contact-card--location {
+    grid-column: auto;
+  }
+
+  .contact-card {
+    min-height: 13rem;
+    padding: var(--space-4);
+  }
+
+  .commit-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .commit-item__summary {
+    display: flex;
+  }
 }

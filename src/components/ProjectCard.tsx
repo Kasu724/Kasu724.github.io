@@ -20,9 +20,9 @@ function ProjectCard({ project }: ProjectCardProps) {
       </div>
 
       <p className="project-card__links">
-        <a href={project.liveUrl}>View project</a>
+        <a href={project.liveUrl} target="_blank" rel="noreferrer">View project</a>
         <span aria-hidden="true">/</span>
-        <a href={project.sourceUrl}>View source</a>
+        <a href={project.sourceUrl} target="_blank" rel="noreferrer">View source</a>
       </p>
     </article>
   )
