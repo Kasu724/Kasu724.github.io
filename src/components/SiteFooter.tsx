@@ -63,7 +63,7 @@ function positionFooterTooltip(tooltip: HTMLSpanElement | null) {
 
   const triggerBounds = trigger.getBoundingClientRect()
   const footerBounds = footer.getBoundingClientRect()
-  const tooltipBorderOffset = 8
+  const tooltipBorderOffset = 24
   const tooltipRightBoundary = Math.min(
     footerBounds.right + tooltipBorderOffset,
     window.innerWidth - tooltipBorderOffset,
