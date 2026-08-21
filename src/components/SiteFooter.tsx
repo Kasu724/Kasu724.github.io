@@ -42,13 +42,27 @@ function deploymentCommitDetails(commit: RecentCommit | null) {
   return `${commit.message} · ${commit.sha.slice(0, 7)} · ${date} · +${additions} / -${deletions}`
 }
 
-function tooltipWouldCrossViewport(tooltip: HTMLSpanElement | null) {
-  if (!tooltip) return false
+function positionFooterTooltip(tooltip: HTMLSpanElement | null) {
+  const trigger = tooltip?.parentElement
+  const footer = tooltip?.closest<HTMLElement>('.site-footer')
+  if (!tooltip || !trigger || !footer) return
 
-  const bounds = tooltip.getBoundingClientRect()
-  const viewportPadding = 16
+  const triggerBounds = trigger.getBoundingClientRect()
+  const footerBounds = footer.getBoundingClientRect()
 
-  return bounds.left < viewportPadding || bounds.right > window.innerWidth - viewportPadding
+  tooltip.style.maxWidth = `${footerBounds.width}px`
+  tooltip.style.removeProperty('right')
+  tooltip.classList.remove('site-footer__tooltip-detail--edge')
+
+  const tooltipWidth = Math.min(tooltip.scrollWidth, footerBounds.width)
+  const centeredLeft = triggerBounds.left + (triggerBounds.width / 2) - (tooltipWidth / 2)
+  const centeredRight = centeredLeft + tooltipWidth
+  const crossesPageEdge = centeredLeft < footerBounds.left || centeredRight > footerBounds.right
+
+  if (crossesPageEdge) {
+    tooltip.style.right = `${triggerBounds.right - footerBounds.right}px`
+    tooltip.classList.add('site-footer__tooltip-detail--edge')
+  }
 }
 
 function getStoredTimeOnSite() {
@@ -215,8 +229,6 @@ function SiteFooter() {
   ))
   const deploymentTooltipRef = useRef<HTMLSpanElement>(null)
   const developmentTooltipRef = useRef<HTMLSpanElement>(null)
-  const [deploymentTooltipAtEdge, setDeploymentTooltipAtEdge] = useState(false)
-  const [developmentTooltipAtEdge, setDevelopmentTooltipAtEdge] = useState(false)
 
   const serviceValues = Object.values(status)
   const servicesHealthy = serviceValues.every((health) => health === true)
@@ -327,13 +339,13 @@ function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               data-tooltip="Current deployment commit (click to view)"
-              onPointerEnter={() => setDeploymentTooltipAtEdge(tooltipWouldCrossViewport(deploymentTooltipRef.current))}
-              onFocus={() => setDeploymentTooltipAtEdge(tooltipWouldCrossViewport(deploymentTooltipRef.current))}
+              onPointerEnter={() => positionFooterTooltip(deploymentTooltipRef.current)}
+              onFocus={() => positionFooterTooltip(deploymentTooltipRef.current)}
             >
               <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
               <span className="sr-only">Deployment commit:</span> {deploymentCommit}
               <span
-                className={`site-footer__tooltip-detail${deploymentTooltipAtEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
+                className="site-footer__tooltip-detail"
                 ref={deploymentTooltipRef}
                 aria-hidden="true"
               >
@@ -345,13 +357,13 @@ function SiteFooter() {
             <span
               className="site-footer__commit site-footer__tooltip site-footer__tooltip--detail"
               data-tooltip="Development environment"
-              onPointerEnter={() => setDevelopmentTooltipAtEdge(tooltipWouldCrossViewport(developmentTooltipRef.current))}
-              onFocus={() => setDevelopmentTooltipAtEdge(tooltipWouldCrossViewport(developmentTooltipRef.current))}
+              onPointerEnter={() => positionFooterTooltip(developmentTooltipRef.current)}
+              onFocus={() => positionFooterTooltip(developmentTooltipRef.current)}
             >
               <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
               <span className="sr-only">Deployment commit:</span> {deploymentCommit}
               <span
-                className={`site-footer__tooltip-detail${developmentTooltipAtEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
+                className="site-footer__tooltip-detail"
                 ref={developmentTooltipRef}
                 aria-hidden="true"
               >

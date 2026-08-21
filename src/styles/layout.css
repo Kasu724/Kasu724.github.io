@@ -264,7 +264,8 @@ main > section {
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transform: translate(-50%, var(--space-2));
+  translate: -50% 0;
+  transform: translateY(var(--space-2));
   transition:
     opacity var(--motion-duration-fast) var(--motion-ease-standard),
     transform var(--motion-duration-fast) var(--motion-ease-standard),
@@ -274,7 +275,7 @@ main > section {
 .site-footer__tooltip:is(:hover, :focus-visible)::after {
   opacity: 1;
   visibility: visible;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
 }
 
 .site-footer__tooltip--detail::after {
@@ -305,7 +306,8 @@ main > section {
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transform: translate(-50%, var(--space-2));
+  translate: -50% 0;
+  transform: translateY(var(--space-2));
   transition:
     opacity var(--motion-duration-fast) var(--motion-ease-standard),
     transform var(--motion-duration-fast) var(--motion-ease-standard),
@@ -319,17 +321,14 @@ main > section {
 .site-footer__tooltip:is(:hover, :focus-visible) .site-footer__tooltip-detail {
   opacity: 1;
   visibility: visible;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
 }
 
 .site-footer__tooltip-detail--edge {
   right: 0;
   left: auto;
+  translate: 0 0;
   transform: translateY(var(--space-2));
-}
-
-.site-footer__tooltip:is(:hover, :focus-visible) .site-footer__tooltip-detail--edge {
-  transform: translateY(0);
 }
 
 .site-footer__icon {
