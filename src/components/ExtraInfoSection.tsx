@@ -4,8 +4,6 @@ import { getCachedRecentCommits, loadRecentCommits } from '../data/githubCommits
 import GitHubContributionsCard from './GitHubContributionsSection'
 import LocationMap from './LocationMap'
 
-const githubProfileUrl = 'https://github.com/Kasu724'
-
 function PulseIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6" /></svg>
 }
@@ -29,10 +27,6 @@ function MailIcon() {
       <path d="m4 7 8 6 8-6" />
     </svg>
   )
-}
-
-function ArrowIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" /></svg>
 }
 
 function ExtraInfoSection() {
@@ -129,9 +123,6 @@ function ExtraInfoSection() {
             )}
           </div>
 
-          <a className="contact-card__footer-link" href={githubProfileUrl} target="_blank" rel="noreferrer">
-            View GitHub activity <ArrowIcon />
-          </a>
         </article>
       </div>
     </section>
