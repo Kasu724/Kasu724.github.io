@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadRecentCommits } from '../data/githubCommits'
+import GitHubContributionsCard from './GitHubContributionsSection'
 import LocationMap from './LocationMap'
 
 const githubProfileUrl = 'https://github.com/Kasu724'
@@ -68,41 +69,7 @@ function ExtraInfoSection() {
       <h2 id="extra-info-title">Extra Info</h2>
 
       <div className="contact-grid">
-        <article className="contact-card contact-card--commits">
-          <div className="contact-card__heading">
-            <span className="contact-card__icon"><PulseIcon /></span>
-            <h3>Recent Commits</h3>
-          </div>
-
-          <div className="commit-list" aria-live="polite">
-            {recentCommits.length > 0 ? recentCommits.map((commit) => (
-              <a className="commit-item" href={commit.url} target="_blank" rel="noreferrer" key={`${commit.repository}:${commit.sha}`}>
-                <span className="commit-item__summary">
-                  <strong className="commit-item__repository">{commit.repository}:</strong>
-                  <span className="commit-item__message">{commit.message}</span>
-                </span>
-                <span className="commit-item__meta">
-                  <span>{commit.sha.slice(0, 7)}</span>
-                  {commit.date && (
-                    <time dateTime={commit.date}>
-                      {new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(commit.date))}
-                    </time>
-                  )}
-                </span>
-              </a>
-            )) : (
-              <p className="commit-list__message">
-                {commitsLoading && !commitsUnavailable
-                  ? 'Fetching the latest activity…'
-                  : 'Commit activity is temporarily unavailable.'}
-              </p>
-            )}
-          </div>
-
-          <a className="contact-card__footer-link" href={githubProfileUrl} target="_blank" rel="noreferrer">
-            View GitHub activity <ArrowIcon />
-          </a>
-        </article>
+        <GitHubContributionsCard />
 
         <article className="contact-card contact-card--contact">
           <div className="contact-card__heading">
@@ -122,6 +89,50 @@ function ExtraInfoSection() {
         </article>
 
         <LocationMap />
+
+        <article className="contact-card contact-card--commits">
+          <div className="contact-card__heading">
+            <span className="contact-card__icon"><PulseIcon /></span>
+            <h3>Recent Commits</h3>
+          </div>
+
+          <div className="commit-list" aria-live="polite">
+            {recentCommits.length > 0 ? recentCommits.map((commit) => (
+              <a className="commit-item" href={commit.url} target="_blank" rel="noreferrer" key={`${commit.repository}:${commit.sha}`}>
+                <span className="commit-item__summary">
+                  <strong className="commit-item__repository">{commit.repository}:</strong>
+                  <span className="commit-item__message">{commit.message}</span>
+                </span>
+                <span className="commit-item__meta">
+                  <span className="commit-item__sha">{commit.sha.slice(0, 7)}</span>
+                  {commit.date && (
+                    <time dateTime={commit.date}>
+                      {new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(commit.date))}
+                    </time>
+                  )}
+                  <span
+                    className="commit-item__changes"
+                    aria-label={`${commit.additions ?? 'Unknown number of'} lines added and ${commit.deletions ?? 'unknown number of'} lines removed`}
+                  >
+                    <span className="commit-item__changes-added">+{commit.additions?.toLocaleString() ?? '—'}</span>
+                    <span className="commit-item__changes-separator">/</span>
+                    <span className="commit-item__changes-removed">-{commit.deletions?.toLocaleString() ?? '—'}</span>
+                  </span>
+                </span>
+              </a>
+            )) : (
+              <p className="commit-list__message">
+                {commitsLoading && !commitsUnavailable
+                  ? 'Fetching the latest activity…'
+                  : 'Commit activity is temporarily unavailable.'}
+              </p>
+            )}
+          </div>
+
+          <a className="contact-card__footer-link" href={githubProfileUrl} target="_blank" rel="noreferrer">
+            View GitHub activity <ArrowIcon />
+          </a>
+        </article>
       </div>
     </section>
   )
