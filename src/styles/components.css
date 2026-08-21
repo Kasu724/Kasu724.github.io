@@ -971,6 +971,7 @@
 
 .contact-card--commits {
   grid-column: 1 / -1;
+  min-height: 0;
 }
 
 .contact-card__heading {
@@ -1017,7 +1018,7 @@
 .commit-list {
   display: grid;
   align-content: start;
-  gap: 0;
+  gap: var(--space-3);
   min-height: 6rem;
 }
 
@@ -1027,7 +1028,7 @@
   align-items: baseline;
   gap: var(--space-4);
   min-width: 0;
-  padding: 0.2rem var(--space-1);
+  padding: var(--space-1);
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   font-size: 0.85rem;
@@ -1056,14 +1057,28 @@
   white-space: nowrap;
 }
 
+.commit-item,
+.commit-item__repository,
+.commit-item__message,
+.commit-item__meta,
+.commit-item__meta time,
+.commit-item__changes-separator {
+  transition: color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
 .commit-item__meta {
   display: grid;
   grid-template-columns: 4.75rem 4.5rem 7.75rem;
-  column-gap: var(--space-3);
+  column-gap: var(--space-4);
   align-items: baseline;
   color: var(--color-text);
   font-size: inherit;
   white-space: nowrap;
+}
+
+.commit-item__meta > * {
+  justify-self: end;
+  text-align: right;
 }
 
 .commit-item__meta .commit-item__sha {
@@ -1100,6 +1115,18 @@
 
 .commit-list__message {
   margin: var(--space-2);
+}
+
+.commit-item:is(:hover, :focus-visible) {
+  color: var(--color-accent);
+}
+
+.commit-item:is(:hover, :focus-visible) .commit-item__repository,
+.commit-item:is(:hover, :focus-visible) .commit-item__message,
+.commit-item:is(:hover, :focus-visible) .commit-item__meta,
+.commit-item:is(:hover, :focus-visible) .commit-item__meta time,
+.commit-item:is(:hover, :focus-visible) .commit-item__changes-separator {
+  color: var(--color-accent);
 }
 
 .contact-card__footer-link {
@@ -1275,7 +1302,6 @@
     background: var(--color-surface-elevated);
   }
 
-  .commit-item:hover,
   .contact-card__heading--button:hover,
   .contact-card__place:hover {
     background: var(--color-page);
@@ -1332,7 +1358,7 @@
 
   .commit-item__meta {
     grid-template-columns: 4.5rem 4rem minmax(6.5rem, 1fr);
-    column-gap: var(--space-2);
+    column-gap: var(--space-4);
     width: 100%;
   }
 }

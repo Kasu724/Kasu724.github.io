@@ -47,6 +47,7 @@ const recentCommitsEndpoint = `https://api.github.com/search/commits?${new URLSe
 const hasDeploymentCommit = /^[0-9a-f]{7,40}$/i.test(deploymentCommit)
 
 let recentCommitsRequest: Promise<RecentCommit[]> | null = null
+let deploymentCommitRequest: Promise<RecentCommit> | null = null
 
 function isRecentCommit(value: unknown): value is RecentCommit {
   if (!value || typeof value !== 'object') return false
@@ -142,14 +143,31 @@ function getCommitEndpoint(commit: RecentCommit) {
   return `https://api.github.com/repos/${repository}/commits/${commit.sha}`
 }
 
+export function loadDeploymentCommit() {
+  if (!hasDeploymentCommit) {
+    return Promise.reject(new Error('No deployment commit is available'))
+  }
+
+  if (!deploymentCommitRequest) {
+    const signal = AbortSignal.timeout(8_000)
+    deploymentCommitRequest = githubRequest<GitHubCommit>(
+      `https://api.github.com/repos/${siteRepository}/commits/${deploymentCommit}`,
+      signal,
+    )
+      .then((commit) => toRecentCommit(commit, siteRepository))
+      .finally(() => {
+        deploymentCommitRequest = null
+      })
+  }
+
+  return deploymentCommitRequest
+}
+
 async function fetchRecentCommits() {
   const signal = AbortSignal.timeout(8_000)
   const searchRequest = githubRequest<GitHubCommitSearchResponse>(recentCommitsEndpoint, signal)
   const deploymentRequest = hasDeploymentCommit
-    ? githubRequest<GitHubCommit>(
-        `https://api.github.com/repos/${siteRepository}/commits/${deploymentCommit}`,
-        signal,
-      )
+    ? loadDeploymentCommit()
     : Promise.resolve(null)
 
   const [searchResult, deploymentResult] = await Promise.allSettled([
@@ -163,7 +181,7 @@ async function fetchRecentCommits() {
     : getCachedRecentCommits()
 
   if (deploymentResult.status === 'fulfilled' && deploymentResult.value) {
-    commits.push(toRecentCommit(deploymentResult.value, siteRepository))
+    commits.push(deploymentResult.value)
   }
 
   const uniqueCommits = [...new Map(

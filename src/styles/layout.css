@@ -271,6 +271,13 @@ main > section {
     visibility var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
+.site-footer__tooltip[data-tooltip-detail]::after {
+  content: attr(data-tooltip) "\A" attr(data-tooltip-detail);
+  max-width: min(32rem, calc(100vw - 2rem));
+  text-align: left;
+  white-space: pre-line;
+}
+
 .site-footer__tooltip:is(:hover, :focus-visible)::after {
   opacity: 1;
   visibility: visible;

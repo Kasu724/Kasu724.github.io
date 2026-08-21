@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
+import { getCachedRecentCommits, loadDeploymentCommit, type RecentCommit } from '../data/githubCommits'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
 import { useServiceStatus } from './useServiceStatus'
 
@@ -8,6 +9,11 @@ const deploymentCommit = isDeployedBuild ? deploymentCommitSha.slice(0, 7) : 'de
 const deploymentCommitUrl = isDeployedBuild
   ? `https://github.com/Kasu724/Kasu724.github.io/commit/${deploymentCommitSha}`
   : undefined
+const deploymentCommitDateFormatter = new Intl.DateTimeFormat('en', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'UTC',
+})
 const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE?.trim() || 'kasu724'
 const goatCounterTotalPath = 'TOTAL'
 const timeOnSiteStorageKey = 'kasu724-portfolio-time-on-site'
@@ -22,6 +28,18 @@ type GoatCounterWindow = Window & { goatcounter?: GoatCounter }
 
 let goatCounterScriptPromise: Promise<void> | null = null
 let goatCounterPageviewSent = false
+
+function deploymentCommitDetails(commit: RecentCommit | null) {
+  if (!commit) return 'Loading commit information…'
+
+  const date = commit.date
+    ? deploymentCommitDateFormatter.format(new Date(commit.date))
+    : 'Date unavailable'
+  const additions = commit.additions?.toLocaleString() ?? '—'
+  const deletions = commit.deletions?.toLocaleString() ?? '—'
+
+  return `Commit: ${commit.message} · ID: ${commit.sha.slice(0, 7)} · Date: ${date} · Lines: +${additions} / -${deletions}`
+}
 
 function getStoredTimeOnSite() {
   try {
@@ -180,6 +198,11 @@ function SiteFooter() {
   const { status, setServiceHealth } = useServiceStatus()
   const [timeOnSite, setTimeOnSite] = useState(getStoredTimeOnSite)
   const [viewCount, setViewCount] = useState<number | null>(null)
+  const [deploymentCommitInfo, setDeploymentCommitInfo] = useState<RecentCommit | null>(() => (
+    isDeployedBuild
+      ? getCachedRecentCommits().find((commit) => commit.sha === deploymentCommitSha) ?? null
+      : null
+  ))
 
   const serviceValues = Object.values(status)
   const servicesHealthy = serviceValues.every((health) => health === true)
@@ -237,6 +260,22 @@ function SiteFooter() {
     }
   }, [setServiceHealth])
 
+  useEffect(() => {
+    if (!isDeployedBuild) return undefined
+
+    let active = true
+
+    void loadDeploymentCommit()
+      .then((commit) => {
+        if (active) setDeploymentCommitInfo(commit)
+      })
+      .catch(() => undefined)
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <footer className="site-footer">
       <div className="site-footer__inner">
@@ -274,6 +313,7 @@ function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               data-tooltip="Current deployment commit (click to view)"
+              data-tooltip-detail={deploymentCommitDetails(deploymentCommitInfo)}
             >
               <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
               <span className="sr-only">Deployment commit:</span> {deploymentCommit}
