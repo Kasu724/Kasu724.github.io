@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadDeploymentCommit, type RecentCommit } from '../data/githubCommits'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
@@ -14,6 +14,7 @@ const deploymentCommitDateFormatter = new Intl.DateTimeFormat('en', {
   timeStyle: 'short',
   timeZone: 'UTC',
 })
+const developmentCommitDetails = 'Development build · dev · unavailable · +— / -—'
 const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE?.trim() || 'kasu724'
 const goatCounterTotalPath = 'TOTAL'
 const timeOnSiteStorageKey = 'kasu724-portfolio-time-on-site'
@@ -38,7 +39,16 @@ function deploymentCommitDetails(commit: RecentCommit | null) {
   const additions = commit.additions?.toLocaleString() ?? '—'
   const deletions = commit.deletions?.toLocaleString() ?? '—'
 
-  return `Commit: ${commit.message} · ID: ${commit.sha.slice(0, 7)} · Date: ${date} · Lines: +${additions} / -${deletions}`
+  return `${commit.message} · ${commit.sha.slice(0, 7)} · ${date} · +${additions} / -${deletions}`
+}
+
+function tooltipWouldCrossViewport(tooltip: HTMLSpanElement | null) {
+  if (!tooltip) return false
+
+  const bounds = tooltip.getBoundingClientRect()
+  const viewportPadding = 16
+
+  return bounds.left < viewportPadding || bounds.right > window.innerWidth - viewportPadding
 }
 
 function getStoredTimeOnSite() {
@@ -203,6 +213,10 @@ function SiteFooter() {
       ? getCachedRecentCommits().find((commit) => commit.sha === deploymentCommitSha) ?? null
       : null
   ))
+  const deploymentTooltipRef = useRef<HTMLSpanElement>(null)
+  const developmentTooltipRef = useRef<HTMLSpanElement>(null)
+  const [deploymentTooltipAtEdge, setDeploymentTooltipAtEdge] = useState(false)
+  const [developmentTooltipAtEdge, setDevelopmentTooltipAtEdge] = useState(false)
 
   const serviceValues = Object.values(status)
   const servicesHealthy = serviceValues.every((health) => health === true)
@@ -308,23 +322,42 @@ function SiteFooter() {
           </span>
           {deploymentCommitUrl ? (
             <a
-              className="site-footer__commit site-footer__tooltip"
+              className="site-footer__commit site-footer__tooltip site-footer__tooltip--detail"
               href={deploymentCommitUrl}
               target="_blank"
               rel="noreferrer"
               data-tooltip="Current deployment commit (click to view)"
-              data-tooltip-detail={deploymentCommitDetails(deploymentCommitInfo)}
+              onPointerEnter={() => setDeploymentTooltipAtEdge(tooltipWouldCrossViewport(deploymentTooltipRef.current))}
+              onFocus={() => setDeploymentTooltipAtEdge(tooltipWouldCrossViewport(deploymentTooltipRef.current))}
             >
               <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
               <span className="sr-only">Deployment commit:</span> {deploymentCommit}
+              <span
+                className={`site-footer__tooltip-detail${deploymentTooltipAtEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
+                ref={deploymentTooltipRef}
+                aria-hidden="true"
+              >
+                <span>Current deployment commit (click to view)</span>
+                <span>{deploymentCommitDetails(deploymentCommitInfo)}</span>
+              </span>
             </a>
           ) : (
             <span
-              className="site-footer__commit site-footer__tooltip"
+              className="site-footer__commit site-footer__tooltip site-footer__tooltip--detail"
               data-tooltip="Development environment"
+              onPointerEnter={() => setDevelopmentTooltipAtEdge(tooltipWouldCrossViewport(developmentTooltipRef.current))}
+              onFocus={() => setDevelopmentTooltipAtEdge(tooltipWouldCrossViewport(developmentTooltipRef.current))}
             >
               <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
               <span className="sr-only">Deployment commit:</span> {deploymentCommit}
+              <span
+                className={`site-footer__tooltip-detail${developmentTooltipAtEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
+                ref={developmentTooltipRef}
+                aria-hidden="true"
+              >
+                <span>Development environment</span>
+                <span>{developmentCommitDetails}</span>
+              </span>
             </span>
           )}
           <a
