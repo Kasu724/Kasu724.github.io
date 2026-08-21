@@ -25,7 +25,6 @@ type RecentCommitsCache = {
 
 const githubUser = 'Kasu724'
 const recentCommitsCacheKey = 'kasu724-recent-github-commits'
-const recentCommitsCacheLifetime = 5 * 60 * 1000
 const recentCommitsEndpoint = `https://api.github.com/search/commits?${new URLSearchParams({
   q: `author:${githubUser}`,
   sort: 'committer-date',
@@ -106,11 +105,6 @@ async function fetchRecentCommits() {
 }
 
 export function loadRecentCommits() {
-  const cache = readCache()
-  if (cache && Date.now() - cache.cachedAt < recentCommitsCacheLifetime) {
-    return Promise.resolve(cache.commits)
-  }
-
   if (!recentCommitsRequest) {
     recentCommitsRequest = fetchRecentCommits()
       .finally(() => {
