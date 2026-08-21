@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadDeploymentCommit, type RecentCommit } from '../data/githubCommits'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
@@ -56,10 +56,22 @@ function deploymentCommitDetails(commit: RecentCommit | null) {
   }
 }
 
-function positionFooterTooltip(tooltip: HTMLSpanElement | null) {
+type FooterTooltipPosition = {
+  atEdge: boolean
+  maxWidth: number | null
+  right: number
+}
+
+const initialFooterTooltipPosition: FooterTooltipPosition = {
+  atEdge: true,
+  maxWidth: null,
+  right: 0,
+}
+
+function getFooterTooltipPosition(tooltip: HTMLSpanElement | null): FooterTooltipPosition | null {
   const trigger = tooltip?.parentElement
   const footer = tooltip?.closest<HTMLElement>('.site-footer')
-  if (!tooltip || !trigger || !footer) return
+  if (!tooltip || !trigger || !footer) return null
 
   const triggerBounds = trigger.getBoundingClientRect()
   const footerBounds = footer.getBoundingClientRect()
@@ -70,18 +82,28 @@ function positionFooterTooltip(tooltip: HTMLSpanElement | null) {
   )
   const tooltipMaxWidth = tooltipRightBoundary - footerBounds.left
 
-  tooltip.style.maxWidth = `${tooltipMaxWidth}px`
-  tooltip.style.removeProperty('right')
-  tooltip.classList.remove('site-footer__tooltip-detail--edge')
-
   const tooltipWidth = Math.min(tooltip.scrollWidth, tooltipMaxWidth)
   const centeredLeft = triggerBounds.left + (triggerBounds.width / 2) - (tooltipWidth / 2)
   const centeredRight = centeredLeft + tooltipWidth
   const crossesPageEdge = centeredLeft < footerBounds.left || centeredRight > tooltipRightBoundary
 
-  if (crossesPageEdge) {
-    tooltip.style.right = `${triggerBounds.right - tooltipRightBoundary}px`
-    tooltip.classList.add('site-footer__tooltip-detail--edge')
+  return {
+    atEdge: crossesPageEdge,
+    maxWidth: tooltipMaxWidth,
+    right: triggerBounds.right - tooltipRightBoundary,
+  }
+}
+
+function tooltipPositionsMatch(left: FooterTooltipPosition, right: FooterTooltipPosition) {
+  return left.atEdge === right.atEdge
+    && left.maxWidth === right.maxWidth
+    && left.right === right.right
+}
+
+function footerTooltipStyle(position: FooterTooltipPosition): CSSProperties {
+  return {
+    maxWidth: position.maxWidth === null ? undefined : `${position.maxWidth}px`,
+    right: position.atEdge ? `${position.right}px` : undefined,
   }
 }
 
@@ -249,12 +271,42 @@ function SiteFooter() {
   ))
   const deploymentTooltipRef = useRef<HTMLSpanElement>(null)
   const developmentTooltipRef = useRef<HTMLSpanElement>(null)
+  const [deploymentTooltipPosition, setDeploymentTooltipPosition] = useState(initialFooterTooltipPosition)
+  const [developmentTooltipPosition, setDevelopmentTooltipPosition] = useState(initialFooterTooltipPosition)
 
   const serviceValues = Object.values(status)
   const servicesHealthy = serviceValues.every((health) => health === true)
   const serviceFailed = serviceValues.some((health) => health === false)
   const serviceState = servicesHealthy ? 'nominal' : serviceFailed ? 'degraded' : 'checking'
   const deploymentTooltipDetails = deploymentCommitDetails(deploymentCommitInfo)
+
+  useLayoutEffect(() => {
+    function updateTooltipPositions() {
+      const deploymentPosition = getFooterTooltipPosition(deploymentTooltipRef.current)
+      const developmentPosition = getFooterTooltipPosition(developmentTooltipRef.current)
+
+      if (deploymentPosition) {
+        setDeploymentTooltipPosition((currentPosition) => (
+          tooltipPositionsMatch(currentPosition, deploymentPosition)
+            ? currentPosition
+            : deploymentPosition
+        ))
+      }
+
+      if (developmentPosition) {
+        setDevelopmentTooltipPosition((currentPosition) => (
+          tooltipPositionsMatch(currentPosition, developmentPosition)
+            ? currentPosition
+            : developmentPosition
+        ))
+      }
+    }
+
+    updateTooltipPositions()
+    window.addEventListener('resize', updateTooltipPositions)
+
+    return () => window.removeEventListener('resize', updateTooltipPositions)
+  }, [deploymentCommitInfo, viewCount])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -360,15 +412,14 @@ function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               data-tooltip="Current deployment commit (click to view)"
-              onPointerEnter={() => positionFooterTooltip(deploymentTooltipRef.current)}
-              onFocus={() => positionFooterTooltip(deploymentTooltipRef.current)}
             >
               <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
               <span className="sr-only">Deployment commit:</span> {deploymentCommit}
               <span
-                className="site-footer__tooltip-detail"
+                className={`site-footer__tooltip-detail${deploymentTooltipPosition.atEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
                 ref={deploymentTooltipRef}
                 aria-hidden="true"
+                style={footerTooltipStyle(deploymentTooltipPosition)}
               >
                 <span>Current deployment commit (click to view)</span>
                 <span>
@@ -383,15 +434,14 @@ function SiteFooter() {
             <span
               className="site-footer__commit site-footer__tooltip site-footer__tooltip--detail"
               data-tooltip="Development environment"
-              onPointerEnter={() => positionFooterTooltip(developmentTooltipRef.current)}
-              onFocus={() => positionFooterTooltip(developmentTooltipRef.current)}
             >
               <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
               <span className="sr-only">Deployment commit:</span> {deploymentCommit}
               <span
-                className="site-footer__tooltip-detail"
+                className={`site-footer__tooltip-detail${developmentTooltipPosition.atEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
                 ref={developmentTooltipRef}
                 aria-hidden="true"
+                style={footerTooltipStyle(developmentTooltipPosition)}
               >
                 <span>Development environment</span>
                 <span>
