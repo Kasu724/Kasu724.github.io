@@ -718,6 +718,234 @@
   }
 }
 
+/* GitHub contributions */
+.contribution-card {
+  position: relative;
+  padding: var(--space-6);
+  overflow: visible;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  box-shadow: var(--shadow-elevated);
+}
+
+.contact-card--contributions {
+  grid-column: span 2;
+  justify-content: space-between;
+}
+
+.contribution-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.contribution-card__header h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.contribution-card__title {
+  min-width: 0;
+}
+
+.contribution-card__github-link {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.contact-card .contribution-card__github-link svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.contribution-calendar {
+  --contribution-cell-size: 0.85rem;
+  --contribution-cell-gap: 0.19rem;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.contribution-calendar__area {
+  position: relative;
+}
+
+.contribution-calendar__day-labels {
+  display: grid;
+  grid-template-rows: repeat(7, var(--contribution-cell-size));
+  gap: var(--contribution-cell-gap);
+  padding-top: 1.45rem;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  line-height: var(--contribution-cell-size);
+}
+
+.contribution-calendar__viewport {
+  min-width: 0;
+  padding-bottom: var(--space-2);
+  overflow-x: auto;
+  scrollbar-color: var(--color-border) transparent;
+  scrollbar-width: thin;
+}
+
+.contribution-calendar__canvas {
+  width: max-content;
+  min-width: 100%;
+}
+
+.contribution-calendar__months {
+  display: grid;
+  grid-template-columns: repeat(var(--contribution-week-count), var(--contribution-cell-size));
+  gap: var(--contribution-cell-gap);
+  height: 1.25rem;
+  margin-bottom: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  width: max-content;
+  margin-inline: auto;
+}
+
+.contribution-calendar__months span {
+  line-height: 1;
+}
+
+.contribution-calendar__grid {
+  display: grid;
+  grid-auto-columns: var(--contribution-cell-size);
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, var(--contribution-cell-size));
+  gap: var(--contribution-cell-gap);
+  width: max-content;
+  margin-inline: auto;
+}
+
+.contribution-calendar__cell {
+  display: block;
+  width: var(--contribution-cell-size);
+  height: var(--contribution-cell-size);
+  border: 1px solid color-mix(in srgb, var(--color-border) 65%, transparent);
+  border-radius: 0.16rem;
+  background: color-mix(in srgb, var(--color-surface-elevated) 78%, var(--color-border));
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.contribution-calendar__cell--level-1 {
+  background: color-mix(in srgb, var(--accent-green) 28%, var(--color-surface-elevated));
+}
+
+.contribution-calendar__cell--level-2 {
+  background: color-mix(in srgb, var(--accent-green) 48%, var(--color-surface-elevated));
+}
+
+.contribution-calendar__cell--level-3 {
+  background: color-mix(in srgb, var(--accent-green) 72%, var(--color-surface-elevated));
+}
+
+.contribution-calendar__cell--level-4 {
+  background: var(--accent-green);
+}
+
+.contribution-calendar__cell--empty {
+  border-color: transparent;
+  background: transparent;
+}
+
+.contribution-calendar__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+}
+
+.contribution-calendar__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.contribution-calendar__legend .contribution-calendar__cell {
+  --contribution-cell-size: 0.65rem;
+}
+
+.contribution-calendar__message {
+  display: grid;
+  min-height: 8.5rem;
+  place-items: center;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.contribution-calendar__tooltip {
+  position: absolute;
+  z-index: 5;
+  max-width: min(16rem, calc(100vw - var(--space-8)));
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-elevated);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - var(--space-2)));
+}
+
+@media (hover: hover) {
+  .contribution-calendar__grid .contribution-calendar__cell:not(.contribution-calendar__cell--empty):hover {
+    z-index: 1;
+    outline: 1px solid var(--color-text);
+    transform: scale(1.35);
+  }
+
+  .contribution-card__github-link:hover {
+    color: var(--color-text);
+  }
+}
+
+@media (max-width: 36rem) {
+  .contribution-card {
+    padding: var(--space-4);
+  }
+
+  .contribution-card__header {
+    gap: var(--space-3);
+  }
+
+  .contribution-calendar {
+    --contribution-cell-size: 0.68rem;
+    --contribution-cell-gap: 0.18rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contribution-calendar__cell {
+    transition: none;
+  }
+}
+
 /* Contact */
 .contact-grid {
   display: grid;
@@ -742,7 +970,7 @@
 }
 
 .contact-card--commits {
-  grid-column: span 2;
+  grid-column: 1 / -1;
 }
 
 .contact-card__heading {
@@ -829,15 +1057,45 @@
 }
 
 .commit-item__meta {
-  display: flex;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: 4.75rem 4.5rem 7.75rem;
+  column-gap: var(--space-3);
+  align-items: baseline;
   color: var(--color-text);
   font-size: inherit;
   white-space: nowrap;
 }
 
-.commit-item__meta span {
+.commit-item__meta .commit-item__sha {
+  grid-column: 1;
   color: var(--accent-green);
+}
+
+.commit-item__meta time {
+  grid-column: 2;
+}
+
+.commit-item__changes {
+  display: inline-flex;
+  grid-column: 3;
+  gap: 0.4rem;
+  align-items: baseline;
+  justify-self: end;
+  font-weight: 700;
+  text-align: right;
+}
+
+.commit-item__meta .commit-item__changes-added {
+  color: var(--accent-green);
+}
+
+.commit-item__meta .commit-item__changes-separator {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.commit-item__meta .commit-item__changes-removed {
+  color: var(--accent-red);
 }
 
 .commit-list__message {
@@ -1032,6 +1290,10 @@
 }
 
 @media (max-width: 56rem) {
+  .contact-card--contributions {
+    grid-column: 1 / -1;
+  }
+
   .contact-card--commits {
     grid-column: 1 / -1;
   }
@@ -1048,6 +1310,7 @@
   }
 
   .contact-card--commits,
+  .contact-card--contributions,
   .contact-card--contact,
   .contact-card--location {
     grid-column: auto;
@@ -1065,5 +1328,11 @@
 
   .commit-item__summary {
     display: flex;
+  }
+
+  .commit-item__meta {
+    grid-template-columns: 4.5rem 4rem minmax(6.5rem, 1fr);
+    column-gap: var(--space-2);
+    width: 100%;
   }
 }
