@@ -24,8 +24,8 @@ function getDeploymentCommit() {
 }
 
 // https://vite.dev/config/
-export default defineConfig(() => {
-  const deploymentCommit = getDeploymentCommit()
+export default defineConfig(({ command }) => {
+  const deploymentCommit = command === 'serve' ? 'dev' : getDeploymentCommit()
 
   return {
     plugins: [
