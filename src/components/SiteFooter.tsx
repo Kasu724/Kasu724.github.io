@@ -14,7 +14,11 @@ const deploymentCommitDateFormatter = new Intl.DateTimeFormat('en', {
   timeStyle: 'short',
   timeZone: 'UTC',
 })
-const developmentCommitDetails = 'Development build · dev · unavailable · +— / -—'
+const developmentCommitDetails = {
+  summary: 'Development build · unavailable',
+  additions: '+—',
+  deletions: '-—',
+}
 const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE?.trim() || 'kasu724'
 const goatCounterTotalPath = 'TOTAL'
 const timeOnSiteStorageKey = 'kasu724-portfolio-time-on-site'
@@ -31,7 +35,13 @@ let goatCounterScriptPromise: Promise<void> | null = null
 let goatCounterPageviewSent = false
 
 function deploymentCommitDetails(commit: RecentCommit | null) {
-  if (!commit) return 'Loading commit information…'
+  if (!commit) {
+    return {
+      summary: 'Loading commit information…',
+      additions: '+—',
+      deletions: '-—',
+    }
+  }
 
   const date = commit.date
     ? deploymentCommitDateFormatter.format(new Date(commit.date))
@@ -39,7 +49,11 @@ function deploymentCommitDetails(commit: RecentCommit | null) {
   const additions = commit.additions?.toLocaleString() ?? '—'
   const deletions = commit.deletions?.toLocaleString() ?? '—'
 
-  return `${commit.message} · ${commit.sha.slice(0, 7)} · ${date} · +${additions} / -${deletions}`
+  return {
+    summary: `${commit.message} · ${date}`,
+    additions: `+${additions}`,
+    deletions: `-${deletions}`,
+  }
 }
 
 function positionFooterTooltip(tooltip: HTMLSpanElement | null) {
@@ -49,18 +63,24 @@ function positionFooterTooltip(tooltip: HTMLSpanElement | null) {
 
   const triggerBounds = trigger.getBoundingClientRect()
   const footerBounds = footer.getBoundingClientRect()
+  const tooltipBorderOffset = 8
+  const tooltipRightBoundary = Math.min(
+    footerBounds.right + tooltipBorderOffset,
+    window.innerWidth - tooltipBorderOffset,
+  )
+  const tooltipMaxWidth = tooltipRightBoundary - footerBounds.left
 
-  tooltip.style.maxWidth = `${footerBounds.width}px`
+  tooltip.style.maxWidth = `${tooltipMaxWidth}px`
   tooltip.style.removeProperty('right')
   tooltip.classList.remove('site-footer__tooltip-detail--edge')
 
-  const tooltipWidth = Math.min(tooltip.scrollWidth, footerBounds.width)
+  const tooltipWidth = Math.min(tooltip.scrollWidth, tooltipMaxWidth)
   const centeredLeft = triggerBounds.left + (triggerBounds.width / 2) - (tooltipWidth / 2)
   const centeredRight = centeredLeft + tooltipWidth
-  const crossesPageEdge = centeredLeft < footerBounds.left || centeredRight > footerBounds.right
+  const crossesPageEdge = centeredLeft < footerBounds.left || centeredRight > tooltipRightBoundary
 
   if (crossesPageEdge) {
-    tooltip.style.right = `${triggerBounds.right - footerBounds.right}px`
+    tooltip.style.right = `${triggerBounds.right - tooltipRightBoundary}px`
     tooltip.classList.add('site-footer__tooltip-detail--edge')
   }
 }
@@ -234,6 +254,7 @@ function SiteFooter() {
   const servicesHealthy = serviceValues.every((health) => health === true)
   const serviceFailed = serviceValues.some((health) => health === false)
   const serviceState = servicesHealthy ? 'nominal' : serviceFailed ? 'degraded' : 'checking'
+  const deploymentTooltipDetails = deploymentCommitDetails(deploymentCommitInfo)
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -350,7 +371,12 @@ function SiteFooter() {
                 aria-hidden="true"
               >
                 <span>Current deployment commit (click to view)</span>
-                <span>{deploymentCommitDetails(deploymentCommitInfo)}</span>
+                <span>
+                  {deploymentTooltipDetails.summary} ·{' '}
+                  <span className="site-footer__tooltip-additions">{deploymentTooltipDetails.additions}</span>
+                  {' / '}
+                  <span className="site-footer__tooltip-deletions">{deploymentTooltipDetails.deletions}</span>
+                </span>
               </span>
             </a>
           ) : (
@@ -368,7 +394,12 @@ function SiteFooter() {
                 aria-hidden="true"
               >
                 <span>Development environment</span>
-                <span>{developmentCommitDetails}</span>
+                <span>
+                  {developmentCommitDetails.summary} ·{' '}
+                  <span className="site-footer__tooltip-additions">{developmentCommitDetails.additions}</span>
+                  {' / '}
+                  <span className="site-footer__tooltip-deletions">{developmentCommitDetails.deletions}</span>
+                </span>
               </span>
             </span>
           )}

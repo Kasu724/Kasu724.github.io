@@ -318,6 +318,19 @@ main > section {
   display: block;
 }
 
+.site-footer__tooltip-additions,
+.site-footer__tooltip-deletions {
+  font-weight: 700;
+}
+
+.site-footer__tooltip-additions {
+  color: var(--accent-green);
+}
+
+.site-footer__tooltip-deletions {
+  color: var(--accent-red);
+}
+
 .site-footer__tooltip:is(:hover, :focus-visible) .site-footer__tooltip-detail {
   opacity: 1;
   visibility: visible;
