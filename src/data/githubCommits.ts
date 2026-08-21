@@ -1,3 +1,5 @@
+import { deploymentCommit } from 'virtual:site-metadata'
+
 export type RecentCommit = {
   sha: string
   message: string
@@ -6,15 +8,18 @@ export type RecentCommit = {
   url: string
 }
 
+type GitHubCommit = {
+  sha: string
+  html_url: string
+  commit: {
+    message: string
+    committer: { date: string } | null
+  }
+}
+
 type GitHubCommitSearchResponse = {
-  items?: Array<{
-    sha: string
-    html_url: string
+  items?: Array<GitHubCommit & {
     repository: { full_name: string }
-    commit: {
-      message: string
-      committer: { date: string } | null
-    }
   }>
 }
 
@@ -24,6 +29,7 @@ type RecentCommitsCache = {
 }
 
 const githubUser = 'Kasu724'
+const siteRepository = `${githubUser}/${githubUser}.github.io`
 const recentCommitsCacheKey = 'kasu724-recent-github-commits'
 const recentCommitsEndpoint = `https://api.github.com/search/commits?${new URLSearchParams({
   q: `author:${githubUser}`,
@@ -31,6 +37,7 @@ const recentCommitsEndpoint = `https://api.github.com/search/commits?${new URLSe
   order: 'desc',
   per_page: '3',
 })}`
+const hasDeploymentCommit = /^[0-9a-f]{7,40}$/i.test(deploymentCommit)
 
 let recentCommitsRequest: Promise<RecentCommit[]> | null = null
 
@@ -77,31 +84,77 @@ export function getCachedRecentCommits() {
   return readCache()?.commits ?? []
 }
 
-async function fetchRecentCommits() {
-  const response = await fetch(recentCommitsEndpoint, {
+function toRecentCommit(commit: GitHubCommit, repository: string): RecentCommit {
+  return {
+    sha: commit.sha,
+    message: commit.commit.message.split('\n')[0],
+    repository: repository.replace(`${githubUser}/`, ''),
+    date: commit.commit.committer?.date ?? '',
+    url: commit.html_url,
+  }
+}
+
+function githubRequest<T>(url: string, signal: AbortSignal) {
+  return fetch(url, {
     cache: 'no-store',
     headers: {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
     },
-    signal: AbortSignal.timeout(8_000),
-  })
+    signal,
+  }).then(async (response) => {
+    if (!response.ok) {
+      throw new Error(`GitHub returned ${response.status}`)
+    }
 
-  if (!response.ok) {
-    throw new Error(`GitHub returned ${response.status}`)
+    return (await response.json()) as T
+  })
+}
+
+function newestFirst(left: RecentCommit, right: RecentCommit) {
+  const leftDate = Date.parse(left.date)
+  const rightDate = Date.parse(right.date)
+
+  return (Number.isNaN(rightDate) ? 0 : rightDate)
+    - (Number.isNaN(leftDate) ? 0 : leftDate)
+}
+
+async function fetchRecentCommits() {
+  const signal = AbortSignal.timeout(8_000)
+  const searchRequest = githubRequest<GitHubCommitSearchResponse>(recentCommitsEndpoint, signal)
+  const deploymentRequest = hasDeploymentCommit
+    ? githubRequest<GitHubCommit>(
+        `https://api.github.com/repos/${siteRepository}/commits/${deploymentCommit}`,
+        signal,
+      )
+    : Promise.resolve(null)
+
+  const [searchResult, deploymentResult] = await Promise.allSettled([
+    searchRequest,
+    deploymentRequest,
+  ])
+  const commits = searchResult.status === 'fulfilled'
+    ? (searchResult.value.items ?? []).map((item) => (
+        toRecentCommit(item, item.repository.full_name)
+      ))
+    : getCachedRecentCommits()
+
+  if (deploymentResult.status === 'fulfilled' && deploymentResult.value) {
+    commits.push(toRecentCommit(deploymentResult.value, siteRepository))
   }
 
-  const data = (await response.json()) as GitHubCommitSearchResponse
-  const commits = (data.items ?? []).map((item) => ({
-    sha: item.sha,
-    message: item.commit.message.split('\n')[0],
-    repository: item.repository.full_name.replace(`${githubUser}/`, ''),
-    date: item.commit.committer?.date ?? '',
-    url: item.html_url,
-  }))
+  const uniqueCommits = [...new Map(
+    commits.map((commit) => [`${commit.repository}:${commit.sha}`, commit]),
+  ).values()]
+    .sort(newestFirst)
+    .slice(0, 3)
 
-  writeCache(commits)
-  return commits
+  if (uniqueCommits.length === 0) {
+    throw new Error('GitHub did not return any commits')
+  }
+
+  writeCache(uniqueCommits)
+  return uniqueCommits
 }
 
 export function loadRecentCommits() {

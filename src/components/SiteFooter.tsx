@@ -3,8 +3,9 @@ import { socialLinks } from '../data/socialLinks'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
 import { useServiceStatus } from './useServiceStatus'
 
-const deploymentCommit = deploymentCommitSha?.slice(0, 7) ?? 'unknown'
-const deploymentCommitUrl = deploymentCommitSha
+const isDeployedBuild = deploymentCommitSha !== 'dev'
+const deploymentCommit = isDeployedBuild ? deploymentCommitSha.slice(0, 7) : 'dev'
+const deploymentCommitUrl = isDeployedBuild
   ? `https://github.com/Kasu724/Kasu724.github.io/commit/${deploymentCommitSha}`
   : undefined
 const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE?.trim() || 'kasu724'
@@ -266,16 +267,26 @@ function SiteFooter() {
             <span className="site-footer__icon" aria-hidden="true"><EyeIcon /></span>
             <span className="sr-only">Site views:</span> {viewCount?.toLocaleString() ?? '—'} views
           </span>
-          <a
-            className="site-footer__commit site-footer__tooltip"
-            href={deploymentCommitUrl}
-            target="_blank"
-            rel="noreferrer"
-            data-tooltip="Current deployment commit (click to view)"
-          >
-            <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
-            <span className="sr-only">Deployment commit:</span> {deploymentCommit}
-          </a>
+          {deploymentCommitUrl ? (
+            <a
+              className="site-footer__commit site-footer__tooltip"
+              href={deploymentCommitUrl}
+              target="_blank"
+              rel="noreferrer"
+              data-tooltip="Current deployment commit (click to view)"
+            >
+              <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
+              <span className="sr-only">Deployment commit:</span> {deploymentCommit}
+            </a>
+          ) : (
+            <span
+              className="site-footer__commit site-footer__tooltip"
+              data-tooltip="Development environment"
+            >
+              <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
+              <span className="sr-only">Deployment commit:</span> {deploymentCommit}
+            </span>
+          )}
           <a
             className="site-footer__social-link"
             href={socialLinks.github}
