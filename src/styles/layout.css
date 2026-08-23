@@ -289,7 +289,7 @@ main > section {
 
 .site-footer__status-tooltip-title {
   margin-bottom: var(--space-3);
-  color: var(--color-text-muted);
+  color: var(--color-text);
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -303,6 +303,10 @@ main > section {
 
 .site-footer__status-item + .site-footer__status-item {
   margin-top: var(--space-2);
+}
+
+.site-footer__status-item > :first-child {
+  color: var(--color-text-muted);
 }
 
 .site-footer__service-health {
