@@ -1081,7 +1081,7 @@
   overflow: visible;
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface-subtle);
+  background: var(--color-page);
 }
 
 .contact-card--contributions {
@@ -1316,7 +1316,7 @@
   padding: var(--space-4);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface-subtle);
+  background: var(--color-page);
 }
 
 .contact-card--commits {
