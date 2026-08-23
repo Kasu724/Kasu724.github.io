@@ -27,3 +27,5 @@ export const projects: Project[] = [
     sourceUrl: 'https://github.com/Kasu724/vitae-stack',
   },
 ]
+
+export const featuredProjects = projects.slice(0, 2)
