@@ -296,9 +296,11 @@ main > section {
 
 .site-footer__status-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-6);
+  column-gap: var(--space-6);
+  row-gap: var(--space-1);
 }
 
 .site-footer__status-item + .site-footer__status-item {
@@ -306,6 +308,11 @@ main > section {
 }
 
 .site-footer__status-item > :first-child {
+  color: var(--color-text-muted);
+}
+
+.site-footer__service-note {
+  flex-basis: 100%;
   color: var(--color-text-muted);
 }
 

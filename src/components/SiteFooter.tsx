@@ -437,6 +437,11 @@ function SiteFooter() {
                         <span className="site-footer__service-health-dot" aria-hidden="true" />
                         {serviceHealthLabel(health)}
                       </span>
+                      {key === 'viewCount' && health === false && (
+                        <span className="site-footer__service-note">
+                          ad blocker may affect availability
+                        </span>
+                      )}
                     </span>
                   )
                 })}
