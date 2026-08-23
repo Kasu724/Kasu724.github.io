@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadDeploymentCommit, type RecentCommit } from '../data/githubCommits'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
+import type { ServiceHealth, ServiceKey } from './serviceStatus'
 import { useServiceStatus } from './useServiceStatus'
 
 const isDeployedBuild = deploymentCommitSha !== 'dev'
@@ -22,6 +23,13 @@ const developmentCommitDetails = {
 const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE?.trim() || 'kasu724'
 const goatCounterTotalPath = 'TOTAL'
 const timeOnSiteStorageKey = 'kasu724-portfolio-time-on-site'
+const trackedServices = [
+  { key: 'siteCommit', label: 'Deployment commit' },
+  { key: 'recentCommits', label: 'Recent commits' },
+  { key: 'location', label: 'Location display' },
+  { key: 'viewCount', label: 'View counter' },
+  { key: 'timeOnSite', label: 'Session timer' },
+] as const satisfies ReadonlyArray<{ key: ServiceKey; label: string }>
 
 type GoatCounter = {
   allow_local?: boolean
@@ -178,6 +186,12 @@ function formatDuration(totalSeconds: number) {
   return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':')
 }
 
+function serviceHealthLabel(health: ServiceHealth) {
+  if (health === true) return 'Working'
+  if (health === false) return 'Has issues'
+  return 'Checking'
+}
+
 function GithubIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -271,8 +285,10 @@ function SiteFooter() {
   ))
   const deploymentTooltipRef = useRef<HTMLSpanElement>(null)
   const developmentTooltipRef = useRef<HTMLSpanElement>(null)
+  const statusTooltipRef = useRef<HTMLSpanElement>(null)
   const [deploymentTooltipPosition, setDeploymentTooltipPosition] = useState(initialFooterTooltipPosition)
   const [developmentTooltipPosition, setDevelopmentTooltipPosition] = useState(initialFooterTooltipPosition)
+  const [statusTooltipPosition, setStatusTooltipPosition] = useState(initialFooterTooltipPosition)
 
   const serviceValues = Object.values(status)
   const servicesHealthy = serviceValues.every((health) => health === true)
@@ -284,6 +300,7 @@ function SiteFooter() {
     function updateTooltipPositions() {
       const deploymentPosition = getFooterTooltipPosition(deploymentTooltipRef.current)
       const developmentPosition = getFooterTooltipPosition(developmentTooltipRef.current)
+      const statusPosition = getFooterTooltipPosition(statusTooltipRef.current)
 
       if (deploymentPosition) {
         setDeploymentTooltipPosition((currentPosition) => (
@@ -300,13 +317,21 @@ function SiteFooter() {
             : developmentPosition
         ))
       }
+
+      if (statusPosition) {
+        setStatusTooltipPosition((currentPosition) => (
+          tooltipPositionsMatch(currentPosition, statusPosition)
+            ? currentPosition
+            : statusPosition
+        ))
+      }
     }
 
     updateTooltipPositions()
     window.addEventListener('resize', updateTooltipPositions)
 
     return () => window.removeEventListener('resize', updateTooltipPositions)
-  }, [deploymentCommitInfo, viewCount])
+  }, [deploymentCommitInfo, status, viewCount])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -381,12 +406,42 @@ function SiteFooter() {
         <div className="site-footer__identity">
           <span>{new Date().getFullYear()} Kevin Lui</span>
           <span
-            className={`site-footer__status site-footer__status--${serviceState}`}
-            role="status"
-            aria-live="polite"
+            className="site-footer__status-trigger"
+            tabIndex={0}
+            aria-describedby="service-status-tooltip"
           >
-            <span className="site-footer__status-dot" aria-hidden="true" />
-            {servicesHealthy ? 'All Services Nominal' : serviceFailed ? 'Service Issue Detected' : 'Checking Services'}
+            <span
+              className={`site-footer__status site-footer__status--${serviceState}`}
+              role="status"
+              aria-live="polite"
+            >
+              <span className="site-footer__status-dot" aria-hidden="true" />
+              {servicesHealthy ? 'All Services Nominal' : serviceFailed ? 'Service Issue Detected' : 'Checking Services'}
+            </span>
+            <span
+              id="service-status-tooltip"
+              className={`site-footer__status-tooltip${statusTooltipPosition.atEdge ? ' site-footer__status-tooltip--edge' : ''}`}
+              ref={statusTooltipRef}
+              role="tooltip"
+              style={footerTooltipStyle(statusTooltipPosition)}
+            >
+              <span className="site-footer__status-tooltip-title">Tracked Services</span>
+              <span className="site-footer__status-list" role="list">
+                {trackedServices.map(({ key, label }) => {
+                  const health = status[key]
+
+                  return (
+                    <span className="site-footer__status-item" role="listitem" key={key}>
+                      <span>{label}</span>
+                      <span className={`site-footer__service-health site-footer__service-health--${health === true ? 'working' : health === false ? 'issues' : 'checking'}`}>
+                        <span className="site-footer__service-health-dot" aria-hidden="true" />
+                        {serviceHealthLabel(health)}
+                      </span>
+                    </span>
+                  )
+                })}
+              </span>
+            </span>
           </span>
         </div>
 
