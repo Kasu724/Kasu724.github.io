@@ -201,6 +201,7 @@ main > section {
   height: 0.7rem;
   border-radius: 50%;
   background: var(--ctp-green);
+  box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-green) 18%, transparent);
   animation: site-footer-status-pulse 3.5s ease-in-out infinite;
 }
 
@@ -210,6 +211,7 @@ main > section {
 
 .site-footer__status--degraded .site-footer__status-dot {
   background: var(--ctp-red);
+  box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-red) 18%, transparent);
   animation: site-footer-status-alert 900ms ease-in-out infinite;
 }
 
@@ -217,10 +219,12 @@ main > section {
   0%,
   100% {
     opacity: 0.7;
+    box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-red) 18%, transparent);
   }
 
   50% {
     opacity: 1;
+    box-shadow: 0 0 0 0.42rem color-mix(in srgb, var(--ctp-red) 32%, transparent);
   }
 }
 
@@ -228,10 +232,12 @@ main > section {
   0%,
   100% {
     opacity: 0.72;
+    box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--ctp-green) 18%, transparent);
   }
 
   50% {
     opacity: 1;
+    box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--ctp-green) 28%, transparent);
   }
 }
 
