@@ -1,46 +1,60 @@
+import { socialLinks } from '../data/socialLinks'
+
 function AboutPage() {
   return (
     <main className="standalone-page">
-      <section className="page-intro" aria-labelledby="about-page-title">
-        <p className="page-intro__eyebrow">About / beyond the résumé</p>
-        <h1 id="about-page-title">I build reliable systems for complicated problems.</h1>
-        <p className="page-intro__lede">
-          I’m Kevin Lui, a Computer Science student at Stevens Institute of Technology.
-          I’m most interested in the places where software engineering, machine learning,
-          data, and quantitative reasoning overlap.
-        </p>
-      </section>
+      <section className="about-page" aria-labelledby="about-page-title">
+        <h1 id="about-page-title" className="about-page__title">About Me</h1>
 
-      <section className="about-page-grid" aria-label="More about Kevin">
-        <article className="detail-card">
-          <span className="detail-card__index">01</span>
-          <h2>How I work</h2>
-          <p>
-            I like turning ambiguous requirements into systems that are understandable,
-            testable, and useful. That usually means learning the domain first, choosing
-            the simplest durable architecture, and making tradeoffs visible.
-          </p>
-        </article>
+        <div className="about-page__layout">
+          <img
+            className="about-page__image"
+            src={`${import.meta.env.BASE_URL}images/profile.jpg`}
+            alt="Portrait of Kevin"
+          />
 
-        <article className="detail-card">
-          <span className="detail-card__index">02</span>
-          <h2>What draws me in</h2>
-          <p>
-            The best projects give me a hard technical constraint and a clear human
-            outcome. I’m especially drawn to data-intensive products, AI systems, and
-            developer tools where correctness matters as much as speed.
-          </p>
-        </article>
+          <div className="about-page__content">
+            <p>
+              I’m a <strong>Computer Science student</strong> at{' '}
+              <strong>Stevens Institute of Technology</strong> with minors in{' '}
+              <strong>Quantitative Finance</strong> and <strong>Mathematics</strong>, and a
+              passion for building scalable software, AI systems, and quantitative tools
+              that solve real-world problems. My experience spans{' '}
+              <strong>full-stack engineering</strong>, <strong>AI/ML</strong>,{' '}
+              <strong>data engineering</strong>, and <strong>quantitative finance</strong>,
+              and I enjoy turning complex technical challenges into reliable, impactful
+              products.
+            </p>
 
-        <article className="detail-card">
-          <span className="detail-card__index">03</span>
-          <h2>What I’m learning</h2>
-          <p>
-            My studies in computer science, quantitative finance, and mathematics help me
-            move between implementation and analysis—and keep asking better questions of
-            the systems I build.
-          </p>
-        </article>
+            <div className="about-page__links" aria-label="Contact links">
+              <a href={socialLinks.github} target="_blank" rel="noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.57-.29-5.27-1.28-5.27-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.47.11-3.05 0 0 .97-.31 3.16 1.18a10.96 10.96 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.06.79 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"
+                  />
+                </svg>
+                GitHub
+              </a>
+              <a href={socialLinks.linkedin} target="_blank" rel="noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M5.35 7.8H1.57V20h3.78V7.8ZM3.46 2A2.19 2.19 0 1 0 3.46 6.38 2.19 2.19 0 0 0 3.46 2ZM20 13c0-3.67-1.96-5.38-4.57-5.38a4.42 4.42 0 0 0-4 2.2V7.8H7.66V20h3.78v-6.04c0-1.59.3-3.13 2.27-3.13 1.94 0 1.96 1.82 1.96 3.23V20h3.78L20 13Z"
+                  />
+                </svg>
+                LinkedIn
+              </a>
+              <a href={socialLinks.email}>
+                <svg className="about-page__mail-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="m4 7 8 6 8-6" />
+                </svg>
+                klui7240@gmail.com
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   )

@@ -7,8 +7,8 @@ type SiteHeaderProps = {
 
 const pageDetails: Record<Page, { label: string; href: string; path: string }> = {
   home: { label: 'Home', href: '/', path: '$HOME/' },
-  about: { label: 'About', href: '/about/', path: '$HOME/About/' },
-  projects: { label: 'Projects', href: '/projects/', path: '$HOME/Projects/' },
+  about: { label: 'About', href: '/about/', path: '$HOME/about/' },
+  projects: { label: 'Project', href: '/projects/', path: '$HOME/projects/' },
 }
 
 function SiteHeader({ currentPage }: SiteHeaderProps) {
@@ -32,9 +32,12 @@ function SiteHeader({ currentPage }: SiteHeaderProps) {
 
         <nav className="site-header__nav" aria-label="Primary navigation">
           {(Object.entries(pageDetails) as [Page, (typeof pageDetails)[Page]][])
-            .filter(([page]) => page !== currentPage)
             .map(([page, details]) => (
-              <a href={details.href} key={page}>
+              <a
+                href={details.href}
+                key={page}
+                aria-current={page === currentPage ? 'page' : undefined}
+              >
                 {details.label}
               </a>
             ))}

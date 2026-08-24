@@ -65,16 +65,9 @@ function ProjectsPage() {
 
   return (
     <main className="standalone-page">
-      <section className="page-intro" aria-labelledby="projects-page-title">
-        <p className="page-intro__eyebrow">Projects / selected work</p>
-        <h1 id="projects-page-title">Things I’ve designed, built, and shipped.</h1>
-        <p className="page-intro__lede">
-          A collection of software, AI, data, and quantitative projects. Each one started
-          with a problem worth understanding before it became a technical solution.
-        </p>
-      </section>
+      <section className="projects-page" aria-labelledby="projects-page-title">
+        <h1 id="projects-page-title" className="page-section-label">Project</h1>
 
-      <section aria-label="Project collection">
         <div className="projects-grid projects-grid--page">
           {projects.map((project) => (
             <ProjectCard
