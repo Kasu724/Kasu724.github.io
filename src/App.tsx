@@ -8,15 +8,17 @@ import SiteHeader from './components/SiteHeader'
 import SkillsSection from './components/SkillsSection'
 import { ServiceStatusProvider } from './components/ServiceStatusContext'
 import AboutPage from './pages/AboutPage'
+import FoodPage from './pages/FoodPage'
 import ProjectsPage from './pages/ProjectsPage'
 
-export type Page = 'home' | 'about' | 'projects'
+export type Page = 'home' | 'about' | 'projects' | 'food'
 
 function getCurrentPage(): Page {
   const path = window.location.pathname.replace(/\/+$/, '').toLowerCase()
 
   if (path.endsWith('/about')) return 'about'
   if (path.endsWith('/projects')) return 'projects'
+  if (path.endsWith('/food')) return 'food'
 
   return 'home'
 }
@@ -44,6 +46,7 @@ function App() {
         {currentPage === 'home' && <HomePage />}
         {currentPage === 'about' && <AboutPage />}
         {currentPage === 'projects' && <ProjectsPage />}
+        {currentPage === 'food' && <FoodPage />}
         <SiteFooter />
       </div>
     </ServiceStatusProvider>

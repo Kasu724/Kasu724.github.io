@@ -15,15 +15,34 @@ function AboutPage() {
 
           <div className="about-page__content">
             <p>
-              I’m a <strong>Computer Science student</strong> at{' '}
-              <strong>Stevens Institute of Technology</strong> with minors in{' '}
-              <strong>Quantitative Finance</strong> and <strong>Mathematics</strong>, and a
-              passion for building scalable software, AI systems, and quantitative tools
-              that solve real-world problems. My experience spans{' '}
-              <strong>full-stack engineering</strong>, <strong>AI/ML</strong>,{' '}
-              <strong>data engineering</strong>, and <strong>quantitative finance</strong>,
-              and I enjoy turning complex technical challenges into reliable, impactful
-              products.
+              <span className="about-page__sentence">
+                Hey, I'm Kevin Lui! I'm a <strong>Computer Science student</strong> at{' '}
+                <strong>Stevens Institute of Technology</strong> with minors in{' '}
+                <strong>Quantitative Finance</strong> and <strong>Mathematics</strong>. I'm a
+                previous SWE intern at <strong>Panasonic North America</strong> and the{' '}
+                <strong>Head Quantitative Developer</strong> at{' '}
+                <span
+                  className="about-page__inline-link about-page__tooltip-trigger"
+                  tabIndex={0}
+                  aria-describedby="ssmif-tooltip"
+                >
+                  SSMIF
+                  <span className="about-page__tooltip" id="ssmif-tooltip" role="tooltip">
+                    Stevens Student Managed Investment Fund
+                  </span>
+                </span>
+                . I like to make cool{' '}
+                <a className="about-page__inline-link" href="/projects/">projects</a> and do
+                game dev when I'm bored.
+              </span>
+              <span className="about-page__sentence">
+                Outside of software, I enjoy playing volleyball, drawing, watching anime,
+                playing Minecraft, and eating good{' '}
+                <a className="about-page__inline-link" href="/food/">food</a>. Feel free to
+                shoot me an{' '}
+                <a className="about-page__inline-link" href={socialLinks.email}>email</a> if
+                you'd like to chat.
+              </span>
             </p>
 
             <div className="about-page__links" aria-label="Contact links">

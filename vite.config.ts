@@ -48,6 +48,7 @@ export default defineConfig(({ command }) => {
           home: fromRoot('index.html'),
           about: fromRoot('about/index.html'),
           projects: fromRoot('projects/index.html'),
+          food: fromRoot('food/index.html'),
         },
       },
     },
