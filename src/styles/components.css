@@ -524,6 +524,7 @@
 .project-card h3 {
   margin-bottom: var(--space-3);
   overflow-wrap: anywhere;
+  color: var(--color-accent);
   transition: color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 

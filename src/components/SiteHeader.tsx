@@ -8,7 +8,7 @@ type SiteHeaderProps = {
 const pageDetails: Record<Page, { label: string; href: string; path: string }> = {
   home: { label: 'Home', href: '/', path: '$HOME/' },
   about: { label: 'About', href: '/about/', path: '$HOME/about/' },
-  projects: { label: 'Project', href: '/projects/', path: '$HOME/projects/' },
+  projects: { label: 'Projects', href: '/projects/', path: '$HOME/projects/' },
   food: { label: 'Food', href: '/food/', path: '$HOME/food/' },
 }
 

@@ -66,7 +66,7 @@ function ProjectsPage() {
   return (
     <main className="standalone-page">
       <section className="projects-page" aria-labelledby="projects-page-title">
-        <h1 id="projects-page-title" className="page-section-label">Project</h1>
+        <h1 id="projects-page-title" className="page-section-label">Projects</h1>
 
         <div className="projects-grid projects-grid--page">
           {projects.map((project) => (
