@@ -24,6 +24,28 @@ export const projects: Project[] = [
     liveUrl: '',
     sourceUrl: 'https://github.com/Kasu724/vitae-stack',
   },
+  {
+    title: 'Sign Language Translator',
+    description: 'A tool that translates sign language into text and speech and vice versa, using CV and ML.',
+    highlights: [
+      'Developed a real-time **MediaPipe** and **OpenCV** hand-tracking pipeline with a **95%** detection rate',
+      'Trained a **TensorFlow** gesture classifier for real-time recognition, achieving **80%** held-out test accuracy',
+    ],
+    technologies: ['Python', 'C#','TensorFlow', 'MediaPipe', 'OpenCV'],
+    liveUrl: '',
+    sourceUrl: '',
+  },
+  {
+    title: 'Internship Tracker',
+    description: 'An open-source internship tracking platform for SWE and quant roles from top companies.',
+    highlights: [
+      'Engineered a full-stack **Next.js** platform with **PostgreSQL**, **Prisma**, and **REST APIs** to ingest internships from job boards and custom APIs, implementing **ETL**, **normalization**, and **deduplication** pipelines',
+      'Built **asynchronous workers** and scheduled **data-ingestion jobs** for polling and source traceability, with **NextAuth**, saved searches, application tracking, and **email/Discord alerts**'
+    ],
+    technologies: ['Next.js', 'TypeScript', 'PostgreSQL', 'Prisma', 'REST APIs', 'Docker'],
+    liveUrl: '',
+    sourceUrl: 'https://github.com/Kasu724/faang-quant-tracker',
+  },
 ]
 
 export const featuredProjects = projects.slice(0, 2)

@@ -725,6 +725,11 @@
   grid-template-rows: minmax(0, 1fr);
 }
 
+.project-dialog[data-open-complete="true"] .project-dialog__content-stack {
+  flex: none;
+  grid-template-rows: auto;
+}
+
 .project-dialog__content {
   grid-area: 1 / 1;
   min-width: 0;
@@ -884,7 +889,7 @@
 
 .project-dialog__links {
   flex: none;
-  margin: calc(var(--space-6) * var(--project-dialog-text-scale)) 0 0;
+  margin-top: 0;
 }
 
 @media (hover: hover) {
