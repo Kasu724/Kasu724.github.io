@@ -614,13 +614,15 @@
 .project-dialog {
   --project-dialog-expanded-scale: 1;
   --project-dialog-text-scale: var(--project-dialog-expanded-scale);
-  --project-dialog-title-gap: calc(var(--space-6) * var(--project-dialog-expanded-scale));
+  --project-dialog-title-gap: var(--space-3);
   --project-dialog-final-padding: calc(var(--space-6) * var(--project-dialog-expanded-scale));
+  --project-dialog-text-body: calc(var(--text-body) * var(--project-dialog-text-scale));
+  --project-dialog-text-meta: calc(var(--text-meta) * var(--project-dialog-text-scale));
 
   position: relative;
   display: flex;
-  width: min(42rem, 100%);
-  max-height: min(80vh, 42rem);
+  width: min(46rem, 100%);
+  max-height: min(88vh, 46rem);
   flex-direction: column;
   overflow: auto;
   padding: var(--project-dialog-final-padding);
@@ -659,7 +661,7 @@
 }
 
 .project-dialog[data-open-complete="true"] {
-  overflow: auto;
+  overflow: hidden;
 }
 
 @keyframes project-dialog-open {
@@ -678,7 +680,7 @@
 
   to {
     --project-dialog-text-scale: var(--project-dialog-expanded-scale);
-    --project-dialog-title-gap: calc(var(--space-6) * var(--project-dialog-expanded-scale));
+    --project-dialog-title-gap: var(--space-3);
 
     top: var(--project-dialog-target-top);
     left: var(--project-dialog-target-left);
@@ -693,7 +695,7 @@
 @keyframes project-dialog-close {
   from {
     --project-dialog-text-scale: var(--project-dialog-expanded-scale);
-    --project-dialog-title-gap: calc(var(--space-6) * var(--project-dialog-expanded-scale));
+    --project-dialog-title-gap: var(--space-3);
 
     top: var(--project-dialog-target-top);
     left: var(--project-dialog-target-left);
@@ -725,14 +727,15 @@
   grid-template-rows: minmax(0, 1fr);
 }
 
-.project-dialog[data-open-complete="true"] .project-dialog__content-stack {
-  flex: none;
-  grid-template-rows: auto;
-}
-
 .project-dialog__content {
   grid-area: 1 / 1;
   min-width: 0;
+}
+
+.project-dialog__content--expanded {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
 }
 
 .project-dialog__content--compact {
@@ -778,55 +781,69 @@
 .project-dialog h3 {
   margin-bottom: var(--project-dialog-title-gap);
   color: var(--color-accent);
-  font-size: calc(var(--text-body) * var(--project-dialog-text-scale));
+  font-size: var(--project-dialog-text-body);
 }
 
 .project-dialog .project-dialog__content--compact h3 {
-  margin-bottom: calc(var(--space-3) * var(--project-dialog-text-scale));
+  margin-bottom: var(--space-3);
   color: var(--color-text);
+  font-size: var(--text-body);
 }
 
 .project-dialog {
-  font-size: calc(var(--text-body) * var(--project-dialog-text-scale));
+  font-size: var(--project-dialog-text-body);
+}
+
+.project-dialog .project-dialog__content--compact {
+  font-size: var(--text-body);
 }
 
 .project-dialog .project-dialog__description {
-  margin-bottom: calc(var(--space-6) * var(--project-dialog-text-scale));
+  margin-bottom: var(--space-6);
 }
 
 .project-dialog .project-card__technologies h4,
 .project-dialog .project-card__technologies li,
 .project-dialog .project-card__links {
-  font-size: calc(var(--text-meta) * var(--project-dialog-text-scale));
+  font-size: var(--project-dialog-text-meta);
+}
+
+.project-dialog .project-dialog__content--compact .project-card__technologies h4,
+.project-dialog .project-dialog__content--compact .project-card__technologies li {
+  font-size: var(--text-meta);
 }
 
 .project-dialog .project-card__technologies h4 {
-  margin-bottom: calc(var(--space-3) * var(--project-dialog-text-scale));
+  margin-bottom: var(--space-3);
 }
 
 .project-dialog .project-card__technologies ul {
-  gap: calc(var(--space-2) * var(--project-dialog-text-scale));
-  margin-bottom: calc(var(--space-6) * var(--project-dialog-text-scale));
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
 }
 
 .project-dialog .project-card__technologies li {
-  padding: calc(var(--space-1) * var(--project-dialog-text-scale))
-    calc(var(--space-2) * var(--project-dialog-text-scale));
+  padding: var(--space-1) var(--space-2);
 }
 
 .project-dialog .project-dialog__highlights {
   min-height: 0;
-  gap: calc(var(--space-2) * var(--project-dialog-text-scale));
-  padding-left: calc(1.25rem * var(--project-dialog-text-scale));
-  font-size: calc(var(--text-body) * var(--project-dialog-text-scale));
+  gap: var(--space-2);
+  padding-left: 1.25rem;
+  font-size: var(--project-dialog-text-body);
 }
 
 .project-dialog .project-dialog__highlights li {
-  padding-left: calc(var(--space-1) * var(--project-dialog-text-scale));
+  padding-left: var(--space-1);
 }
 
 .project-dialog__highlights-reveal {
+  min-height: 0;
   overflow: hidden;
+}
+
+.project-dialog[data-open-complete="true"] .project-dialog__highlights-reveal {
+  overflow-y: auto;
 }
 
 .project-dialog--positioned:not([data-closing="true"]) .project-dialog__highlights {
@@ -884,12 +901,12 @@
 }
 
 .project-dialog__highlights {
-  margin-bottom: calc(var(--space-6) * var(--project-dialog-text-scale));
+  margin-bottom: var(--space-3);
 }
 
 .project-dialog__links {
   flex: none;
-  margin-top: 0;
+  margin-top: var(--space-3);
 }
 
 @media (hover: hover) {
