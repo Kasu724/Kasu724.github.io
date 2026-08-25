@@ -23,6 +23,13 @@ function getDeploymentCommit() {
   return process.env.VITE_DEPLOYMENT_COMMIT?.trim() || readGit(['rev-parse', 'HEAD'])
 }
 
+function syncFoodPhotos() {
+  execFileSync(process.execPath, [fromRoot('scripts/sync-food-photos.mjs')], {
+    cwd: fileURLToPath(new URL('.', import.meta.url)),
+    stdio: 'inherit',
+  })
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
   const deploymentCommit = command === 'serve' ? 'dev' : getDeploymentCommit()
@@ -30,6 +37,21 @@ export default defineConfig(({ command }) => {
   return {
     plugins: [
       react(),
+      {
+        name: 'food-photo-sync',
+        configureServer(server) {
+          const normalizedFoodDirectory = fromRoot('public/images/food').replaceAll('\\', '/').toLowerCase()
+
+          server.watcher.add(fromRoot('public/images/food'))
+          server.watcher.on('add', (filePath) => {
+            const normalizedFilePath = filePath.replaceAll('\\', '/').toLowerCase()
+
+            if (normalizedFilePath.startsWith(`${normalizedFoodDirectory}/`)) {
+              syncFoodPhotos()
+            }
+          })
+        },
+      },
       {
         name: 'site-metadata',
         resolveId(id: string) {

@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "food:sync": "node scripts/sync-food-photos.mjs",
+    "predev": "npm run food:sync",
     "dev": "vite",
+    "prebuild": "npm run food:sync",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
