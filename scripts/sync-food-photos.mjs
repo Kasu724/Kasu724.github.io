@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { extname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -7,7 +7,7 @@ const publicDirectory = join(repositoryRoot, 'public')
 const foodDirectory = join(publicDirectory, 'images', 'food')
 const foodDataFile = join(repositoryRoot, 'src', 'data', 'foodPhotos.ts')
 const supportedExtensions = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.webp'])
-const arrayClosingMarker = '\n]\n\nconst monthYearFormatter'
+const arrayOpeningMarker = 'export const foodPhotos: FoodPhoto[] = [\n'
 
 async function findFoodImages(directory) {
   const entries = await readdir(directory, { withFileTypes: true })
@@ -43,22 +43,32 @@ function hasSource(fileContents, source) {
 
 const foodImages = await findFoodImages(foodDirectory)
 const fileContents = await readFile(foodDataFile, 'utf8')
-const missingSources = foodImages
-  .map(toPublicSource)
-  .filter((source) => !hasSource(fileContents, source))
+const missingImages = (await Promise.all(foodImages.map(async (filePath) => {
+  const source = toPublicSource(filePath)
 
-if (missingSources.length === 0) {
+  if (hasSource(fileContents, source)) return null
+
+  const fileStats = await stat(filePath)
+  return {
+    source,
+    addedAt: fileStats.birthtimeMs || fileStats.ctimeMs || fileStats.mtimeMs,
+  }
+})))
+  .filter((image) => image !== null)
+  .sort((left, right) => right.addedAt - left.addedAt || left.source.localeCompare(right.source))
+
+if (missingImages.length === 0) {
   console.log('Food photo data is already synchronized.')
   process.exit(0)
 }
 
-const closingMarkerIndex = fileContents.indexOf(arrayClosingMarker)
+const openingMarkerIndex = fileContents.indexOf(arrayOpeningMarker)
 
-if (closingMarkerIndex === -1) {
-  throw new Error(`Could not find the food photo array closing marker in ${foodDataFile}.`)
+if (openingMarkerIndex === -1) {
+  throw new Error(`Could not find the food photo array opening marker in ${foodDataFile}.`)
 }
 
-const newEntries = missingSources.map((source) => [
+const newEntries = missingImages.map(({ source }) => [
   '  {',
   `    src: ${JSON.stringify(source)},`,
   "    date: '',",
@@ -68,11 +78,12 @@ const newEntries = missingSources.map((source) => [
   '  },',
 ].join('\n')).join('\n')
 
+const insertionIndex = openingMarkerIndex + arrayOpeningMarker.length
 const updatedContents = [
-  fileContents.slice(0, closingMarkerIndex).trimEnd(),
-  newEntries,
-  fileContents.slice(closingMarkerIndex),
-].join('\n')
+  fileContents.slice(0, insertionIndex),
+  `${newEntries}\n`,
+  fileContents.slice(insertionIndex),
+].join('')
 
 await writeFile(foodDataFile, updatedContents, 'utf8')
-console.log(`Added ${missingSources.length} new food photo entr${missingSources.length === 1 ? 'y' : 'ies'}.`)
+console.log(`Added ${missingImages.length} new food photo entr${missingImages.length === 1 ? 'y' : 'ies'}.`)

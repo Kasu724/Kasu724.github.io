@@ -885,9 +885,9 @@
   height: 2.25rem;
   place-items: center;
   padding: 0;
-  border: var(--border-width) solid var(--color-border);
-  border-radius: 50%;
-  background: var(--color-surface-subtle);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--color-text);
   cursor: pointer;
   font: inherit;
@@ -896,7 +896,7 @@
 }
 
 .project-dialog__close:is(:hover, :focus-visible) {
-  border-color: var(--color-accent);
+  background: var(--color-surface-subtle);
   color: var(--color-accent);
 }
 
@@ -1184,11 +1184,6 @@
   gap: var(--space-6);
 }
 
-.food-page__lede {
-  max-width: 65ch;
-  margin: 0;
-}
-
 /* Food gallery */
 .food-gallery {
   display: grid;
@@ -1390,6 +1385,13 @@
   gap: var(--space-8);
 }
 
+.food-dialog__summary .food-photo-summary__header {
+  display: grid;
+  justify-content: stretch;
+  gap: var(--space-1);
+  padding-right: 3.5rem;
+}
+
 .food-dialog__summary .food-photo-summary__venue strong {
   font-size: var(--text-section-title);
   line-height: var(--leading-heading);
@@ -1415,9 +1417,9 @@
   height: 2.5rem;
   place-items: center;
   padding: 0;
-  border: var(--border-width) solid var(--color-border);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-page) 88%, transparent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--color-text);
   cursor: pointer;
   font: inherit;
@@ -1426,7 +1428,7 @@
 }
 
 .food-dialog__close:is(:hover, :focus-visible) {
-  border-color: var(--color-accent);
+  background: var(--color-surface-subtle);
   color: var(--color-accent);
 }
 
