@@ -2231,6 +2231,7 @@
   cursor: pointer;
   font: inherit;
   font-weight: 700;
+  transition: color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .contact-card__clock {
@@ -2257,17 +2258,9 @@
 }
 
 @media (hover: hover) {
-  .contact-card__heading--button:hover,
   .contact-card__place:hover {
-    background: var(--color-page);
     color: var(--color-accent);
   }
-
-  .contact-card__heading--button:hover,
-  .contact-card__place:hover {
-    background: transparent;
-  }
-
 }
 
 @media (max-width: 56rem) {
