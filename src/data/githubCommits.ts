@@ -109,6 +109,29 @@ function toRecentCommit(commit: GitHubCommit, repository: string): RecentCommit 
   }
 }
 
+function getCommitKey(commit: RecentCommit) {
+  return `${commit.repositoryFullName}:${commit.sha}`
+}
+
+function hasCompleteStats(commit: RecentCommit) {
+  return commit.additions !== null && commit.deletions !== null
+}
+
+function reuseCachedStats(
+  commit: RecentCommit,
+  cachedCommits: Map<string, RecentCommit>,
+) {
+  const cachedCommit = cachedCommits.get(getCommitKey(commit))
+
+  return cachedCommit && hasCompleteStats(cachedCommit)
+    ? {
+        ...commit,
+        additions: cachedCommit.additions,
+        deletions: cachedCommit.deletions,
+      }
+    : commit
+}
+
 function githubRequest<T>(url: string, signal: AbortSignal) {
   return fetch(url, {
     cache: 'no-store',
@@ -148,6 +171,14 @@ export function loadDeploymentCommit() {
     return Promise.reject(new Error('No deployment commit is available'))
   }
 
+  const cachedCommit = getCachedRecentCommits().find((commit) => (
+    commit.repositoryFullName === siteRepository
+      && commit.sha === deploymentCommit
+      && hasCompleteStats(commit)
+  ))
+
+  if (cachedCommit) return Promise.resolve(cachedCommit)
+
   if (!deploymentCommitRequest) {
     const signal = AbortSignal.timeout(8_000)
     deploymentCommitRequest = githubRequest<GitHubCommit>(
@@ -165,6 +196,10 @@ export function loadDeploymentCommit() {
 
 async function fetchRecentCommits() {
   const signal = AbortSignal.timeout(8_000)
+  const cachedCommits = getCachedRecentCommits()
+  const cachedCommitsByKey = new Map(
+    cachedCommits.map((commit) => [getCommitKey(commit), commit]),
+  )
   const searchRequest = githubRequest<GitHubCommitSearchResponse>(recentCommitsEndpoint, signal)
   const deploymentRequest = hasDeploymentCommit
     ? loadDeploymentCommit()
@@ -176,16 +211,19 @@ async function fetchRecentCommits() {
   ])
   const commits = searchResult.status === 'fulfilled'
     ? (searchResult.value.items ?? []).map((item) => (
-        toRecentCommit(item, item.repository.full_name)
+        reuseCachedStats(
+          toRecentCommit(item, item.repository.full_name),
+          cachedCommitsByKey,
+        )
       ))
-    : getCachedRecentCommits()
+    : cachedCommits
 
   if (deploymentResult.status === 'fulfilled' && deploymentResult.value) {
     commits.push(deploymentResult.value)
   }
 
   const uniqueCommits = [...new Map(
-    commits.map((commit) => [`${commit.repositoryFullName}:${commit.sha}`, commit]),
+    commits.map((commit) => [getCommitKey(commit), commit]),
   ).values()]
     .sort(newestFirst)
     .slice(0, 5)
@@ -196,7 +234,7 @@ async function fetchRecentCommits() {
 
   const statsSignal = AbortSignal.timeout(8_000)
   const commitsWithStats = await Promise.all(uniqueCommits.map(async (commit) => {
-    if (commit.additions !== null && commit.deletions !== null) return commit
+    if (hasCompleteStats(commit)) return commit
 
     try {
       const detailedCommit = await githubRequest<GitHubCommit>(

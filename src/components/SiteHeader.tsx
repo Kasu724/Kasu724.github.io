@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import ThemeMenu from './ThemeMenu'
 import type { Page } from '../App'
 
@@ -15,6 +16,21 @@ const pageDetails: Record<Page, { label: string; href: string; path: string }> =
 function SiteHeader({ currentPage }: SiteHeaderProps) {
   const currentPath = pageDetails[currentPage].path
   const pagePath = currentPath.slice('$HOME'.length)
+
+  useEffect(() => {
+    const prefetchLinks = Object.entries(pageDetails)
+      .filter(([page]) => page !== currentPage)
+      .map(([, details]) => {
+        const link = document.createElement('link')
+        link.rel = 'prefetch'
+        link.as = 'document'
+        link.href = details.href
+        document.head.append(link)
+        return link
+      })
+
+    return () => prefetchLinks.forEach((link) => link.remove())
+  }, [currentPage])
 
   return (
     <header className="site-header">

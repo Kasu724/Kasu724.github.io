@@ -53,6 +53,25 @@ function getInitialAccent(): AccentName {
   return isAccentName(storedAccent) ? storedAccent : 'peach'
 }
 
+function updateFavicon(accent: AccentName) {
+  const styles = getComputedStyle(document.documentElement)
+  const background = styles.getPropertyValue('--ctp-base').trim()
+  const lettering = styles.getPropertyValue(`--ctp-${accent}`).trim()
+  const favicon = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+
+  if (!favicon || !background || !lettering) return
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="14" fill="${background}"/>
+    <g fill="${lettering}" transform="translate(8.459 45.87) scale(.038 -.038)">
+      <path d="M80 0V730H205V334H292L426 550H566L400 284L569 0H426L292 228H205V0Z"/>
+      <path d="M384 0Q330 0 289.5 22Q249 44 226 84.5Q203 125 203 178V617H27V730H328V178Q328 148 345.5 130.5Q363 113 393 113H559V0Z" transform="translate(600)"/>
+    </g>
+  </svg>`
+
+  favicon.href = `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
 function ThemeMenu() {
   const [palette, setPalette] = useState<PaletteName>(getInitialPalette)
   const [accent, setAccent] = useState<AccentName>(getInitialAccent)
@@ -69,6 +88,10 @@ function ThemeMenu() {
     )
     localStorage.setItem('accent', accent)
   }, [accent])
+
+  useLayoutEffect(() => {
+    updateFavicon(accent)
+  }, [palette, accent])
 
   return (
     <details className="theme-menu">
@@ -98,13 +121,21 @@ function ThemeMenu() {
               <button
                 type="button"
                 aria-label={`Select ${name} accent color`}
+                aria-describedby={`theme-accent-${name}-tooltip`}
                 aria-pressed={accent === name}
                 className={accent === name ? 'is-selected' : undefined}
                 key={name}
                 onClick={() => setAccent(name)}
                 style={{ backgroundColor: `var(--accent-${name})` }}
-                title={name.charAt(0).toUpperCase() + name.slice(1)}
-              />
+              >
+                <span
+                  className="theme-menu__accent-tooltip"
+                  id={`theme-accent-${name}-tooltip`}
+                  role="tooltip"
+                >
+                  {name.charAt(0).toUpperCase() + name.slice(1)}
+                </span>
+              </button>
             ))}
           </div>
         </fieldset>
