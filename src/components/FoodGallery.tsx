@@ -116,6 +116,10 @@ function FoodPhotoDialog({ photo, isClosing, onClose, onExitComplete }: FoodPhot
   const titleId = useId()
   const metadataId = useId()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const thumbnailSource = getFoodThumbnailSource(photo.src, 800)
+  const dialogTitle = photo.caption?.trim()
+    || photo.restaurant?.trim()
+    || `Food photo from ${formatFoodPhotoDate(photo.date)}`
   const imageAlt = photo.alt?.trim()
     || photo.caption?.trim()
     || `Food photographed on ${formatFoodPhotoDate(photo.date)}`
@@ -157,7 +161,7 @@ function FoodPhotoDialog({ photo, isClosing, onClose, onExitComplete }: FoodPhot
         }}
       >
         <h2 id={titleId} className="sr-only">
-          {photo.caption ?? photo.restaurant ?? `Food photo from ${formatFoodPhotoDate(photo.date)}`}
+          {dialogTitle}
         </h2>
         <button
           ref={closeButtonRef}
@@ -170,7 +174,14 @@ function FoodPhotoDialog({ photo, isClosing, onClose, onExitComplete }: FoodPhot
         </button>
 
         <div className="food-dialog__image-wrap">
-          <img src={photo.src} alt={imageAlt} />
+          <img
+            src={photo.src}
+            alt={imageAlt}
+            onError={(event) => {
+              if (event.currentTarget.src === thumbnailSource) return
+              event.currentTarget.src = thumbnailSource
+            }}
+          />
         </div>
 
         <div className="food-dialog__details">

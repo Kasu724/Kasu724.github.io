@@ -36,8 +36,24 @@ function isAccentName(value: string | null): value is AccentName {
   return accentNames.includes(value as AccentName)
 }
 
+function readPreference(key: string) {
+  try {
+    return window.localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function writePreference(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {
+    // Preferences still apply for the current page when storage is unavailable.
+  }
+}
+
 function getInitialPalette(): PaletteName {
-  const storedPalette = localStorage.getItem('palette')
+  const storedPalette = readPreference('palette')
 
   if (isPaletteName(storedPalette)) {
     return storedPalette
@@ -49,7 +65,7 @@ function getInitialPalette(): PaletteName {
 }
 
 function getInitialAccent(): AccentName {
-  const storedAccent = localStorage.getItem('accent')
+  const storedAccent = readPreference('accent')
   return isAccentName(storedAccent) ? storedAccent : 'peach'
 }
 
@@ -78,7 +94,7 @@ function ThemeMenu() {
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = palette
-    localStorage.setItem('palette', palette)
+    writePreference('palette', palette)
   }, [palette])
 
   useLayoutEffect(() => {
@@ -86,7 +102,7 @@ function ThemeMenu() {
       '--color-accent',
       `var(--accent-${accent})`,
     )
-    localStorage.setItem('accent', accent)
+    writePreference('accent', accent)
   }, [accent])
 
   useLayoutEffect(() => {

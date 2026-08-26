@@ -1,12 +1,5 @@
 import { experiences } from '../data/experience'
-
-function renderHighlight(text: string) {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
-    const isBold = part.startsWith('**') && part.endsWith('**')
-
-    return isBold ? <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong> : part
-  })
-}
+import { renderHighlight } from './highlightText'
 
 function ExperienceSection() {
   return (

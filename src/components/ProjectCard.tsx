@@ -1,8 +1,9 @@
+import { useRef } from 'react'
 import type { Project } from '../types/project'
 
 type ProjectCardProps = {
   project: Project
-  onOpen: (origin: HTMLElement) => void
+  onOpen: (origin: HTMLElement, trigger: HTMLButtonElement) => void
   isOpen?: boolean
   isClosing?: boolean
 }
@@ -54,30 +55,28 @@ export function ProjectCardContent({ project, showLinks = true }: ProjectCardCon
 }
 
 function ProjectCard({ project, onOpen, isOpen = false, isClosing = false }: ProjectCardProps) {
-  function handleClick(event: React.MouseEvent<HTMLElement>) {
-    if ((event.target as HTMLElement).closest('a, button')) return
-    onOpen(event.currentTarget)
-  }
-
-  function handleKeyDown(event: React.KeyboardEvent<HTMLElement>) {
-    if (event.target !== event.currentTarget) return
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      onOpen(event.currentTarget)
-    }
-  }
+  const cardRef = useRef<HTMLElement>(null)
 
   return (
     <article
+      ref={cardRef}
       className={`project-card${isOpen ? isClosing ? ' project-card--returning' : ' project-card--hidden' : ''}`}
-      role="button"
-      tabIndex={isOpen ? -1 : 0}
       aria-hidden={isOpen}
-      aria-haspopup="dialog"
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
+      inert={isOpen || undefined}
     >
-      <ProjectCardContent project={project} />
+      <button
+        className="project-card__open"
+        type="button"
+        tabIndex={isOpen ? -1 : 0}
+        aria-label={`Open details for ${project.title}`}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        onClick={(event) => onOpen(cardRef.current ?? event.currentTarget, event.currentTarget)}
+      />
+      <div className="project-card__content">
+        <ProjectCardContent project={project} showLinks={false} />
+      </div>
+      <ProjectLinks project={project} />
     </article>
   )
 }

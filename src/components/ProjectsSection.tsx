@@ -2,21 +2,62 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties
 import { featuredProjects } from '../data/projects'
 import type { Project } from '../types/project'
 import ProjectCard, { ProjectCardContent, ProjectLinks } from './ProjectCard'
-
-function renderHighlight(text: string) {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
-    const isBold = part.startsWith('**') && part.endsWith('**')
-
-    return isBold ? <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong> : part
-  })
-}
+import { renderHighlight } from './highlightText'
+import { useProjectDialog, type DialogOrigin } from './useProjectDialog'
 
 type ProjectDialogProps = {
   project: Project
   onClose: () => void
   onExitComplete: () => void
-  origin: { left: number; top: number; width: number; height: number }
+  origin: DialogOrigin
   isClosing: boolean
+}
+
+const minDialogContentScale = 1
+const maxDialogContentScale = 1.25
+
+function getFocusableElements(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  )).filter((element) => (
+    !element.closest('[inert]')
+      && !element.hasAttribute('aria-hidden')
+      && element.getClientRects().length > 0
+  ))
+}
+
+function geometryMatches(
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+  geometry: DialogOrigin,
+) {
+  const tolerance = 0.5
+  return Math.abs(left - geometry.left) <= tolerance
+    && Math.abs(top - geometry.top) <= tolerance
+    && Math.abs(width - geometry.width) <= tolerance
+    && Math.abs(height - geometry.height) <= tolerance
+}
+
+function getResponsiveDialogBounds(dialog: HTMLElement) {
+  if (!dialog.classList.contains('project-dialog--positioned') || !dialog.parentElement) {
+    return dialog.getBoundingClientRect()
+  }
+
+  const measuredDialog = dialog.cloneNode(true) as HTMLElement
+  measuredDialog.classList.remove('project-dialog--positioned')
+  measuredDialog.removeAttribute('data-closing')
+  measuredDialog.removeAttribute('data-open-complete')
+  measuredDialog.setAttribute('aria-hidden', 'true')
+  measuredDialog.style.animation = 'none'
+  measuredDialog.style.pointerEvents = 'none'
+  measuredDialog.style.visibility = 'hidden'
+  dialog.parentElement.append(measuredDialog)
+
+  const bounds = measuredDialog.getBoundingClientRect()
+  measuredDialog.remove()
+  return bounds
 }
 
 export function ProjectDialog({ project, onClose, onExitComplete, origin, isClosing }: ProjectDialogProps) {
@@ -27,30 +68,123 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
   const [contentScale, setContentScale] = useState(1)
   const [isPositioned, setIsPositioned] = useState(false)
   const [isOpenComplete, setIsOpenComplete] = useState(false)
+  const contentScaleRef = useRef(1)
+  const isPositionedRef = useRef(false)
 
   useEffect(() => {
-    closeButtonRef.current?.focus()
+    const dialog = dialogRef.current
+    if (!dialog) return
+    const dialogElement = dialog
+
+    function handleFocusIn(event: FocusEvent) {
+      if (event.target instanceof Node && !dialogElement.contains(event.target)) {
+        closeButtonRef.current?.focus()
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Tab') return
+
+      const focusableElements = getFocusableElements(dialogElement)
+      if (focusableElements.length === 0) {
+        event.preventDefault()
+        dialogElement.focus()
+        return
+      }
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements.at(-1)!
+      const activeElement = document.activeElement
+      const activeIndex = activeElement instanceof HTMLElement
+        ? focusableElements.indexOf(activeElement)
+        : -1
+      const nextElement = event.shiftKey
+        ? activeIndex <= 0 ? lastElement : focusableElements[activeIndex - 1]
+        : activeIndex === -1 || activeElement === lastElement
+          ? firstElement
+          : focusableElements[activeIndex + 1]
+
+      event.preventDefault()
+      nextElement.focus()
+    }
+
+    document.addEventListener('focusin', handleFocusIn)
+    dialogElement.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn)
+      dialogElement.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   useLayoutEffect(() => {
-    if (!dialogRef.current) return
+    if (isPositioned) closeButtonRef.current?.focus()
+  }, [isPositioned])
 
-    const dialogBounds = dialogRef.current.getBoundingClientRect()
-    const nextContentScale = origin.width > 0 ? dialogBounds.width / origin.width : 1
+  useLayoutEffect(() => {
+    let frame: number | undefined
 
-    if (Math.abs(nextContentScale - contentScale) > 0.001) {
-      setContentScale(nextContentScale)
-      return
+    function updateGeometry() {
+      const dialog = dialogRef.current
+      if (!dialog) return
+
+      const dialogBounds = getResponsiveDialogBounds(dialog)
+      const rawContentScale = origin.width > 0 ? dialogBounds.width / origin.width : 1
+      const nextContentScale = Math.min(
+        maxDialogContentScale,
+        Math.max(minDialogContentScale, rawContentScale),
+      )
+
+      if (Math.abs(nextContentScale - contentScaleRef.current) > 0.001) {
+        contentScaleRef.current = nextContentScale
+        setContentScale(nextContentScale)
+      }
+
+      setDialogGeometry((currentGeometry) => (
+        geometryMatches(
+          dialogBounds.left,
+          dialogBounds.top,
+          dialogBounds.width,
+          dialogBounds.height,
+          currentGeometry,
+        )
+          ? currentGeometry
+          : {
+              left: dialogBounds.left,
+              top: dialogBounds.top,
+              width: dialogBounds.width,
+              height: dialogBounds.height,
+            }
+      ))
+
+      if (!isPositionedRef.current) {
+        isPositionedRef.current = true
+        setIsPositioned(true)
+      }
     }
 
-    setDialogGeometry({
-      left: dialogBounds.left,
-      top: dialogBounds.top,
-      width: dialogBounds.width,
-      height: dialogBounds.height,
-    })
-    setIsPositioned(true)
-  }, [contentScale, origin])
+    function scheduleGeometryUpdate() {
+      if (frame !== undefined) window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        frame = undefined
+        updateGeometry()
+      })
+    }
+
+    updateGeometry()
+    window.addEventListener('resize', scheduleGeometryUpdate)
+    window.addEventListener('orientationchange', scheduleGeometryUpdate)
+    window.visualViewport?.addEventListener('resize', scheduleGeometryUpdate)
+    window.visualViewport?.addEventListener('scroll', scheduleGeometryUpdate)
+
+    return () => {
+      if (frame !== undefined) window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', scheduleGeometryUpdate)
+      window.removeEventListener('orientationchange', scheduleGeometryUpdate)
+      window.visualViewport?.removeEventListener('resize', scheduleGeometryUpdate)
+      window.visualViewport?.removeEventListener('scroll', scheduleGeometryUpdate)
+    }
+  }, [origin])
 
   const highlights = project.highlights?.length ? project.highlights : [project.description]
 
@@ -68,6 +202,7 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
         className={`project-dialog${isPositioned ? ' project-dialog--positioned' : ''}`}
         data-closing={isClosing || undefined}
         data-open-complete={!isClosing && isOpenComplete || undefined}
+        tabIndex={-1}
         style={{
           '--project-dialog-origin-left': `${origin.left}px`,
           '--project-dialog-origin-top': `${origin.top}px`,
@@ -127,63 +262,14 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
 }
 
 function ProjectsSection() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [dialogOrigin, setDialogOrigin] = useState({ left: 0, top: 0, width: 0, height: 0 })
-  const [isClosing, setIsClosing] = useState(false)
-  const previouslyFocusedElement = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    if (!selectedProject) return
-
-    const previousOverflow = document.body.style.overflow
-    const previousPaddingRight = document.body.style.paddingRight
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-    document.body.style.overflow = 'hidden'
-    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsClosing(true)
-    }
-
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      document.body.style.paddingRight = previousPaddingRight
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [selectedProject])
-
-  function openProject(project: Project, origin: HTMLElement) {
-    const bounds = origin.getBoundingClientRect()
-    const nextOrigin = {
-      left: bounds.left,
-      top: bounds.top,
-      width: bounds.width,
-      height: bounds.height,
-    }
-    previouslyFocusedElement.current = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null
-
-    setDialogOrigin(nextOrigin)
-    setIsClosing(false)
-    setSelectedProject(project)
-  }
-
-  function closeProject() {
-    if (!selectedProject || isClosing) return
-
-    setIsClosing(true)
-  }
-
-  function finishClosing() {
-    setSelectedProject(null)
-    setIsClosing(false)
-    setDialogOrigin({ left: 0, top: 0, width: 0, height: 0 })
-    previouslyFocusedElement.current?.focus()
-    previouslyFocusedElement.current = null
-  }
+  const {
+    selectedProject,
+    dialogOrigin,
+    isClosing,
+    openProject,
+    closeProject,
+    finishClosing,
+  } = useProjectDialog()
 
   return (
     <section
@@ -200,7 +286,7 @@ function ProjectsSection() {
             project={project}
             isOpen={selectedProject?.title === project.title}
             isClosing={selectedProject?.title === project.title && isClosing}
-            onOpen={(origin) => openProject(project, origin)}
+            onOpen={(origin, trigger) => openProject(project, origin, trigger)}
           />
         ))}
       </div>
