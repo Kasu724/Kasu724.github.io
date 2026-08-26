@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react'
 import {
   getCachedGitHubContributions,
   loadGitHubContributions,
@@ -73,7 +80,13 @@ function getLastSixMonths(data: GitHubContributions): GitHubContributions {
   if (!lastContribution) return { total: 0, contributions: [] }
 
   const startDate = parseContributionDate(lastContribution.date)
+  const originalDay = startDate.getUTCDate()
+  startDate.setUTCDate(1)
   startDate.setUTCMonth(startDate.getUTCMonth() - 6)
+  const daysInStartMonth = new Date(
+    Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth() + 1, 0),
+  ).getUTCDate()
+  startDate.setUTCDate(Math.min(originalDay, daysInStartMonth))
   const startDateString = startDate.toISOString().slice(0, 10)
   const contributions = data.contributions.filter((day) => day.date >= startDateString)
 
@@ -85,6 +98,7 @@ function getLastSixMonths(data: GitHubContributions): GitHubContributions {
 
 function ContributionCalendar({ data }: { data: GitHubContributions }) {
   const areaRef = useRef<HTMLDivElement>(null)
+  const cellRefs = useRef<Array<HTMLSpanElement | null>>([])
   const [tooltip, setTooltip] = useState<{
     date: string
     label: string
@@ -95,6 +109,15 @@ function ContributionCalendar({ data }: { data: GitHubContributions }) {
     () => buildCalendar(data.contributions),
     [data.contributions],
   )
+  const firstCellIndex = useMemo(
+    () => weeks.flat().findIndex((day) => day !== null),
+    [weeks],
+  )
+  const [activeCellIndex, setActiveCellIndex] = useState<number | null>(null)
+  const selectedCellIndex = activeCellIndex !== null
+    && weeks[Math.floor(activeCellIndex / 7)]?.[activeCellIndex % 7]
+    ? activeCellIndex
+    : firstCellIndex
   const calendarStyle: CalendarStyle = { '--contribution-week-count': weeks.length }
 
   function showTooltip(cell: HTMLSpanElement, day: GitHubContributionDay) {
@@ -115,6 +138,46 @@ function ContributionCalendar({ data }: { data: GitHubContributions }) {
       ),
       top: cellBounds.top - areaBounds.top,
     })
+  }
+
+  function focusCell(index: number) {
+    const cell = cellRefs.current[index]
+    if (!cell) return
+
+    setActiveCellIndex(index)
+    cell.focus()
+  }
+
+  function findAdjacentCell(index: number, weekDelta: number, dayDelta: number) {
+    let weekIndex = Math.floor(index / 7) + weekDelta
+    let dayIndex = index % 7 + dayDelta
+
+    while (
+      weekIndex >= 0
+      && weekIndex < weeks.length
+      && dayIndex >= 0
+      && dayIndex < 7
+    ) {
+      if (weeks[weekIndex]?.[dayIndex]) return weekIndex * 7 + dayIndex
+      weekIndex += weekDelta
+      dayIndex += dayDelta
+    }
+
+    return index
+  }
+
+  function handleCellKeyDown(event: ReactKeyboardEvent<HTMLSpanElement>, index: number) {
+    const movement: Record<string, [number, number]> = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    }
+    const [weekDelta, dayDelta] = movement[event.key] ?? []
+    if (weekDelta === undefined || dayDelta === undefined) return
+
+    event.preventDefault()
+    focusCell(findAdjacentCell(index, weekDelta, dayDelta))
   }
 
   return (
@@ -141,25 +204,56 @@ function ContributionCalendar({ data }: { data: GitHubContributions }) {
               role="grid"
               aria-label={`${data.total.toLocaleString()} GitHub contributions in the past 6 months`}
             >
-              {weeks.flatMap((week, weekIndex) => week.map((day, dayIndex) => (
-                day ? (
-                  <span
-                    className={`contribution-calendar__cell contribution-calendar__cell--level-${day.level}`}
-                    role="gridcell"
-                    aria-label={contributionLabel(day)}
-                    aria-describedby={tooltip?.date === day.date ? 'contribution-calendar-tooltip' : undefined}
-                    onPointerEnter={(event) => showTooltip(event.currentTarget, day)}
-                    onPointerLeave={() => setTooltip(null)}
-                    key={day.date}
-                  />
-                ) : (
-                  <span
-                    className="contribution-calendar__cell contribution-calendar__cell--empty"
-                    aria-hidden="true"
-                    key={`empty-${weekIndex}-${dayIndex}`}
-                  />
-                )
-              )))}
+              {Array.from({ length: 7 }, (_, dayIndex) => (
+                <div
+                  role="row"
+                  style={{ display: 'contents' }}
+                  key={`day-${dayIndex}`}
+                >
+                  {weeks.map((week, weekIndex) => {
+                    const day = week[dayIndex]
+                    const cellIndex = (weekIndex * 7) + dayIndex
+                    const cellStyle = {
+                      gridColumn: weekIndex + 1,
+                      gridRow: dayIndex + 1,
+                    }
+
+                    return day ? (
+                      <span
+                        ref={(cell) => { cellRefs.current[cellIndex] = cell }}
+                        className={`contribution-calendar__cell contribution-calendar__cell--level-${day.level}`}
+                        role="gridcell"
+                        tabIndex={selectedCellIndex === cellIndex ? 0 : -1}
+                        aria-label={contributionLabel(day)}
+                        aria-describedby={tooltip?.date === day.date ? 'contribution-calendar-tooltip' : undefined}
+                        style={cellStyle}
+                        onFocus={(event) => {
+                          setActiveCellIndex(cellIndex)
+                          showTooltip(event.currentTarget, day)
+                        }}
+                        onBlur={(event) => {
+                          if (!(event.relatedTarget instanceof Node) || !areaRef.current?.contains(event.relatedTarget)) {
+                            setTooltip(null)
+                          }
+                        }}
+                        onKeyDown={(event) => handleCellKeyDown(event, cellIndex)}
+                        onPointerEnter={(event) => showTooltip(event.currentTarget, day)}
+                        onPointerLeave={(event) => {
+                          if (document.activeElement !== event.currentTarget) setTooltip(null)
+                        }}
+                        key={day.date}
+                      />
+                    ) : (
+                      <span
+                        className="contribution-calendar__cell contribution-calendar__cell--empty"
+                        aria-hidden="true"
+                        style={cellStyle}
+                        key={`empty-${weekIndex}-${dayIndex}`}
+                      />
+                    )
+                  })}
+                </div>
+              ))}
             </div>
           </div>
         </div>
