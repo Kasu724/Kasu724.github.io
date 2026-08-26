@@ -1,4 +1,5 @@
 import { socialLinks } from '../data/socialLinks'
+import ProfileImage from './ProfileImage'
 
 function AboutSection() {
   return (
@@ -59,11 +60,7 @@ function AboutSection() {
           </div>
         </div>
 
-        <img
-          className="about-section__image"
-          src={`${import.meta.env.BASE_URL}images/profile.jpg`}
-          alt="Portrait of Kevin"
-        />
+        <ProfileImage className="about-section__image" />
       </div>
     </section>
   )

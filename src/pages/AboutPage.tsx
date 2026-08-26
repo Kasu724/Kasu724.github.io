@@ -1,4 +1,5 @@
 import { socialLinks } from '../data/socialLinks'
+import ProfileImage from '../components/ProfileImage'
 import {
   CalendarIcon,
   ClockIcon,
@@ -152,11 +153,7 @@ function AboutPage() {
         <h1 id="about-page-title" className="about-page__title">About Me</h1>
 
         <div className="about-page__layout">
-          <img
-            className="about-page__image"
-            src={`${import.meta.env.BASE_URL}images/profile.jpg`}
-            alt="Portrait of Kevin"
-          />
+          <ProfileImage className="about-page__image" />
 
           <div className="about-page__content">
             <p>
