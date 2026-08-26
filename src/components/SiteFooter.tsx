@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadDeploymentCommit, type RecentCommit } from '../data/githubCommits'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
+import { ClockIcon, CommitIcon, EyeIcon } from './ServiceIcons'
 import type { ServiceHealth, ServiceKey } from './serviceStatus'
 import { useServiceStatus } from './useServiceStatus'
 
@@ -209,66 +210,6 @@ function LinkedinIcon() {
       <path
         fill="currentColor"
         d="M5.35 7.8H1.57V20h3.78V7.8ZM3.46 2A2.19 2.19 0 1 0 3.46 6.38 2.19 2.19 0 0 0 3.46 2ZM20 13c0-3.67-1.96-5.38-4.57-5.38a4.42 4.42 0 0 0-4 2.2V7.8H7.66V20h3.78v-6.04c0-1.59.3-3.13 2.27-3.13 1.94 0 1.96 1.82 1.96 3.23V20h3.78L20 13Z"
-      />
-    </svg>
-  )
-}
-
-function EyeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-        d="M2.5 12s3.3-5 9.5-5 9.5 5 9.5 5"
-      />
-      <circle
-        cx="12"
-        cy="15.5"
-        r="2.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
-  )
-}
-
-function ClockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1.8"
-        d="M12 12V7.5M12 12h4.25"
-      />
-    </svg>
-  )
-}
-
-function CommitIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1.8"
-        d="M12 2v7M12 15v7"
-      />
-      <circle
-        cx="12"
-        cy="12"
-        r="3.4"
-        fill="var(--color-surface-elevated)"
-        stroke="currentColor"
-        strokeWidth="1.8"
       />
     </svg>
   )

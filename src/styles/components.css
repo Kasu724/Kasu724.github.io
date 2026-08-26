@@ -1178,6 +1178,90 @@
   border-radius: var(--radius-md);
 }
 
+.about-site {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.about-site__intro {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.about-site__intro h2,
+.about-site__intro p {
+  margin: 0;
+}
+
+.about-site__intro p {
+  max-width: none;
+}
+
+.about-site__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.about-site__stack span {
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.about-site strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.about-site__services {
+  display: grid;
+  gap: 0;
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.about-site__service {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.about-site__service-icon {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+.about-site__service-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.about-site__service h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.about-site__service p {
+  max-width: none;
+  margin: 0;
+  font-size: var(--text-body);
+}
+
 .projects-page,
 .food-page {
   display: grid;
@@ -1551,6 +1635,11 @@
 }
 
 @media (max-width: 34rem) {
+  .about-site__service {
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+  }
+
   .education-entry__heading {
     flex-direction: column;
   }

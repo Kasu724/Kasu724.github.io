@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Map as LeafletMap } from 'leaflet'
+import { MapPinIcon } from './ServiceIcons'
 import { useServiceStatus } from './useServiceStatus'
 
 const hobokenCoordinates: [number, number] = [40.74325, -74.0324]
 const mapZoom = 15  
-
-function MapPinIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></svg>
-}
 
 function SunIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" /></svg>

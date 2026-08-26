@@ -3,10 +3,7 @@ import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadRecentCommits } from '../data/githubCommits'
 import GitHubContributionsCard from './GitHubContributionsSection'
 import LocationMap from './LocationMap'
-
-function PulseIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6" /></svg>
-}
+import { PulseIcon } from './ServiceIcons'
 
 function SendIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>

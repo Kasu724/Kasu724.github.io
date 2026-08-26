@@ -1,4 +1,149 @@
 import { socialLinks } from '../data/socialLinks'
+import {
+  CalendarIcon,
+  ClockIcon,
+  CommitIcon,
+  EyeIcon,
+  HeartPulseIcon,
+  MapPinIcon,
+  PaletteIcon,
+  PulseIcon,
+  RocketIcon,
+  UtensilsIcon,
+} from '../components/ServiceIcons'
+
+const siteStack = [
+  'React 19',
+  'TypeScript',
+  'Vite',
+  'Custom CSS',
+  'Leaflet',
+  'GitHub Pages',
+] as const
+
+const siteServices = [
+  {
+    name: 'Recent commit tracker',
+    icon: PulseIcon,
+    description: (
+      <>
+        The home page requests my <strong>five latest commits</strong> from the{' '}
+        <strong>GitHub REST API</strong>, then fetches each commit's{' '}
+        additions and deletions. Successful responses are cached in{' '}
+        <strong>local storage</strong> so the last available activity can still be shown if
+        GitHub is temporarily unavailable.
+      </>
+    ),
+  },
+  {
+    name: 'Deployment commit tracker',
+    icon: CommitIcon,
+    description: (
+      <>
+        <strong>GitHub Actions</strong> passes the <strong>commit SHA</strong> that triggered a
+        production build into <strong>Vite</strong>. A small <strong>virtual module</strong>{' '}
+        makes that exact SHA available to the footer, where it is linked to GitHub and includes
+        the commit message, date, and change totals.
+      </>
+    ),
+  },
+  {
+    name: 'Contribution calendar',
+    icon: CalendarIcon,
+    description: (
+      <>
+        The contribution grid uses the public <strong>GitHub Contributions API</strong>{' '}
+        maintained by <strong>GrubersJoe</strong>. The response is validated, trimmed to the most recent{' '}
+        six months, and <strong>cached locally</strong> before it is rendered
+        as an accessible calendar.
+      </>
+    ),
+  },
+  {
+    name: 'View count',
+    icon: EyeIcon,
+    description: (
+      <>
+        <strong>GoatCounter</strong> records one <strong>page view</strong> for the current path
+        and exposes the <strong>site-wide total</strong> displayed in the footer. Tracking and
+        total retrieval happen directly in the <strong>browser</strong>; the portfolio does not
+        run its own analytics server.
+      </>
+    ),
+  },
+  {
+    name: 'Location and local time',
+    icon: MapPinIcon,
+    description: (
+      <>
+        <strong>Leaflet</strong> renders an interactive map centered on{' '}
+        <strong>Hoboken</strong> using <strong>CARTO map tiles</strong>. The clock is calculated
+        in the browser with the <strong>America/New_York</strong> time zone.
+      </>
+    ),
+  },
+  {
+    name: 'Session timer',
+    icon: ClockIcon,
+    description: (
+      <>
+        The <strong>footer timer</strong> counts time spent on the site and saves the running
+        total in <strong>local storage</strong>, allowing it to continue between visits on the
+        same browser.
+      </>
+    ),
+  },
+  {
+    name: 'Theme preferences',
+    icon: PaletteIcon,
+    description: (
+      <>
+        The theme menu offers <strong>four Catppuccin palettes</strong> and{' '}
+        <strong>fourteen accent colors</strong>. The selected palette and accent are applied
+        through <strong>CSS custom properties</strong> and saved in{' '}
+        <strong>local storage</strong> so they persist between visits.
+      </>
+    ),
+  },
+  {
+    name: 'Service health indicator',
+    icon: HeartPulseIcon,
+    description: (
+      <>
+        A shared <strong>React context</strong> collects the state of the deployment metadata,
+        recent commits, map, view counter, and session timer. The footer summarizes those
+        checks as <strong>working</strong>, <strong>checking</strong>, or <strong>having
+        issues</strong> without relying on a separate monitoring backend.
+      </>
+    ),
+  },
+  {
+    name: 'Food photo delivery',
+    icon: UtensilsIcon,
+    description: (
+      <>
+        Original food photos are stored in <strong>Cloudflare R2</strong>. A local{' '}
+        <strong>Node.js</strong> script uploads new files through the{' '}
+        <strong>S3-compatible API</strong> and uses <strong>Sharp</strong> to create responsive{' '}
+        <strong>WebP thumbnails</strong>; gallery cards load those smaller variants before
+        opening the full original.
+      </>
+    ),
+  },
+  {
+    name: 'Build and deployment',
+    icon: RocketIcon,
+    description: (
+      <>
+        Every push to the <strong>main branch</strong> starts a{' '}
+        <strong>GitHub Actions</strong> workflow that installs dependencies,{' '}
+        <strong>type-checks</strong> and <strong>builds</strong> the site, then publishes the generated
+        multi-entry static files to <strong>GitHub Pages</strong>. There is no application
+        server or database to maintain.
+      </>
+    ),
+  },
+] as const
 
 function AboutPage() {
   return (
@@ -73,6 +218,41 @@ function AboutPage() {
               </a>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="about-site" aria-labelledby="about-site-title">
+        <div className="about-site__intro">
+          <h2 id="about-site-title">About This Site</h2>
+          <p>
+            This portfolio is a lightweight, <strong>static web application</strong> built from{' '}
+            <strong>React</strong> components and <strong>TypeScript</strong>.{' '}
+            <strong>Vite</strong> builds each top-level page from its own HTML entry file.{' '}
+            <strong>Shared components</strong> are used for the header, footer, theme
+            system, and live data displays. Most content ships with the site; the small amount
+            of changing data is requested from{' '}
+            public services in your browser.
+          </p>
+        </div>
+
+        <div className="about-site__stack" aria-label="Site technology stack">
+          {siteStack.map((technology) => (
+            <span key={technology}>{technology}</span>
+          ))}
+        </div>
+
+        <div className="about-site__services" aria-label="Site services and implementation details">
+          {siteServices.map(({ name, description, icon: Icon }) => (
+            <article className="about-site__service" key={name}>
+              <span className="about-site__service-icon" aria-hidden="true">
+                <Icon />
+              </span>
+              <div>
+                <h3>{name}</h3>
+                <p>{description}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
     </main>
