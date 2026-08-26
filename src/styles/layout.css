@@ -103,12 +103,12 @@ footer {
   color: var(--color-text-muted);
   font-size: var(--text-meta);
   text-decoration: none;
-  transition: background-color 160ms ease, color 160ms ease;
+  transition: color 160ms ease;
 }
 
 @media (hover: hover) {
   .site-header__nav a:hover {
-    background: var(--color-surface-elevated);
+    color: var(--color-accent);
   }
 }
 

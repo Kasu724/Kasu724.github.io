@@ -167,8 +167,7 @@
 
 @media (hover: hover) {
   .theme-menu summary:hover {
-    background: var(--color-surface-elevated);
-    color: var(--color-text);
+    color: var(--color-accent);
   }
 
   .theme-menu__palettes button:hover {
