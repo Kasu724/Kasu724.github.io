@@ -1,5 +1,7 @@
+import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { extname, join, relative, resolve, sep } from 'node:path'
+import { loadEnvFile } from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const repositoryRoot = resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -8,6 +10,47 @@ const foodDirectory = join(publicDirectory, 'images', 'food')
 const foodDataFile = join(repositoryRoot, 'src', 'data', 'foodPhotos.ts')
 const supportedExtensions = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.webp'])
 const arrayOpeningMarker = 'export const foodPhotos: FoodPhoto[] = [\n'
+const r2ObjectPrefix = 'originals'
+const contentTypes = new Map([
+  ['.avif', 'image/avif'],
+  ['.gif', 'image/gif'],
+  ['.jpeg', 'image/jpeg'],
+  ['.jpg', 'image/jpeg'],
+  ['.png', 'image/png'],
+  ['.webp', 'image/webp'],
+])
+
+try {
+  loadEnvFile(join(repositoryRoot, '.env.local'))
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error
+}
+
+const r2EnvironmentKeys = [
+  'R2_ENDPOINT',
+  'R2_ACCESS_KEY_ID',
+  'R2_SECRET_ACCESS_KEY',
+  'R2_BUCKET_NAME',
+  'R2_PUBLIC_URL',
+]
+const configuredR2EnvironmentKeys = r2EnvironmentKeys.filter((key) => process.env[key])
+
+if (configuredR2EnvironmentKeys.length > 0 && configuredR2EnvironmentKeys.length < r2EnvironmentKeys.length) {
+  const missingKeys = r2EnvironmentKeys.filter((key) => !process.env[key])
+  throw new Error(`R2 configuration is incomplete. Missing: ${missingKeys.join(', ')}`)
+}
+
+const r2IsConfigured = configuredR2EnvironmentKeys.length === r2EnvironmentKeys.length
+const r2Client = r2IsConfigured
+  ? new S3Client({
+      region: 'auto',
+      endpoint: process.env.R2_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      },
+    })
+  : null
 
 async function findFoodImages(directory) {
   const entries = await readdir(directory, { withFileTypes: true })
@@ -33,6 +76,16 @@ function toPublicSource(filePath) {
   return `/${relative(publicDirectory, filePath).split(sep).join('/')}`
 }
 
+function toR2ObjectKey(filePath) {
+  const relativePath = relative(foodDirectory, filePath).split(sep).join('/')
+  return `${r2ObjectPrefix}/${relativePath}`
+}
+
+function toR2PublicSource(objectKey) {
+  const encodedKey = objectKey.split('/').map(encodeURIComponent).join('/')
+  return `${process.env.R2_PUBLIC_URL.replace(/\/$/, '')}/${encodedKey}`
+}
+
 function hasSource(fileContents, source) {
   const doubleQuotedSource = JSON.stringify(source)
   const singleQuotedSource = `'${source.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`
@@ -41,16 +94,56 @@ function hasSource(fileContents, source) {
     || fileContents.includes(`src: ${singleQuotedSource}`)
 }
 
+async function objectExists(objectKey) {
+  try {
+    await r2Client.send(new HeadObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: objectKey,
+    }))
+    return true
+  } catch (error) {
+    const statusCode = error.$metadata?.httpStatusCode
+
+    if (statusCode === 404 || error.name === 'NotFound' || error.name === 'NoSuchKey') {
+      return false
+    }
+
+    throw error
+  }
+}
+
+async function uploadToR2(filePath, objectKey) {
+  if (await objectExists(objectKey)) return false
+
+  await r2Client.send(new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME,
+    Key: objectKey,
+    Body: await readFile(filePath),
+    ContentType: contentTypes.get(extname(filePath).toLowerCase()),
+    CacheControl: 'public, max-age=31536000, immutable',
+  }))
+
+  return true
+}
+
 const foodImages = await findFoodImages(foodDirectory)
 const fileContents = await readFile(foodDataFile, 'utf8')
+let uploadedImageCount = 0
 const missingImages = (await Promise.all(foodImages.map(async (filePath) => {
-  const source = toPublicSource(filePath)
+  const localSource = toPublicSource(filePath)
+  const objectKey = toR2ObjectKey(filePath)
+  const r2Source = r2IsConfigured ? toR2PublicSource(objectKey) : null
 
-  if (hasSource(fileContents, source)) return null
+  if (r2IsConfigured && await uploadToR2(filePath, objectKey)) {
+    uploadedImageCount += 1
+    console.log(`Uploaded ${objectKey} to R2.`)
+  }
+
+  if (hasSource(fileContents, localSource) || (r2Source && hasSource(fileContents, r2Source))) return null
 
   const fileStats = await stat(filePath)
   return {
-    source,
+    source: r2Source ?? localSource,
     addedAt: fileStats.birthtimeMs || fileStats.ctimeMs || fileStats.mtimeMs,
   }
 })))
@@ -58,6 +151,9 @@ const missingImages = (await Promise.all(foodImages.map(async (filePath) => {
   .sort((left, right) => right.addedAt - left.addedAt || left.source.localeCompare(right.source))
 
 if (missingImages.length === 0) {
+  if (uploadedImageCount > 0) {
+    console.log(`Uploaded ${uploadedImageCount} food photo${uploadedImageCount === 1 ? '' : 's'} to R2.`)
+  }
   console.log('Food photo data is already synchronized.')
   process.exit(0)
 }
@@ -86,4 +182,7 @@ const updatedContents = [
 ].join('')
 
 await writeFile(foodDataFile, updatedContents, 'utf8')
+if (uploadedImageCount > 0) {
+  console.log(`Uploaded ${uploadedImageCount} food photo${uploadedImageCount === 1 ? '' : 's'} to R2.`)
+}
 console.log(`Added ${missingImages.length} new food photo entr${missingImages.length === 1 ? 'y' : 'ies'}.`)

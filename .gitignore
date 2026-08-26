@@ -13,6 +13,9 @@ dist
 dist-ssr
 *.local
 
+# Food photos are uploaded to Cloudflare R2 and kept out of Git.
+public/images/food/*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
