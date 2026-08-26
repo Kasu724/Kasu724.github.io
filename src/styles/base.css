@@ -38,6 +38,10 @@ html {
   }
 }
 
+.page-view--fallback-transition {
+  animation: page-fade-in 180ms ease-out both;
+}
+
 body {
   min-width: 20rem;
   margin: 0;
