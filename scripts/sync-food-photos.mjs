@@ -1,8 +1,9 @@
 import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { extname, join, relative, resolve, sep } from 'node:path'
 import { loadEnvFile } from 'node:process'
 import { fileURLToPath } from 'node:url'
+import sharp from 'sharp'
 
 const repositoryRoot = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const publicDirectory = join(repositoryRoot, 'public')
@@ -10,7 +11,13 @@ const foodDirectory = join(publicDirectory, 'images', 'food')
 const foodDataFile = join(repositoryRoot, 'src', 'data', 'foodPhotos.ts')
 const supportedExtensions = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.webp'])
 const arrayOpeningMarker = 'export const foodPhotos: FoodPhoto[] = [\n'
-const r2ObjectPrefix = 'originals'
+const r2OriginalPrefix = 'originals'
+const r2ThumbnailPrefix = 'thumbnails'
+const thumbnailVariants = [
+  { width: 400, height: 300, quality: 75 },
+  { width: 800, height: 600, quality: 78 },
+]
+const syncConcurrency = 4
 const contentTypes = new Map([
   ['.avif', 'image/avif'],
   ['.gif', 'image/gif'],
@@ -78,7 +85,12 @@ function toPublicSource(filePath) {
 
 function toR2ObjectKey(filePath) {
   const relativePath = relative(foodDirectory, filePath).split(sep).join('/')
-  return `${r2ObjectPrefix}/${relativePath}`
+  return `${r2OriginalPrefix}/${relativePath}`
+}
+
+function toR2ThumbnailObjectKey(filePath, width) {
+  const relativePath = relative(foodDirectory, filePath).split(sep).join('/')
+  return `${r2ThumbnailPrefix}/${width}w/${relativePath}.webp`
 }
 
 function toR2PublicSource(objectKey) {
@@ -112,7 +124,7 @@ async function objectExists(objectKey) {
   }
 }
 
-async function uploadToR2(filePath, objectKey) {
+async function uploadOriginalToR2(filePath, objectKey) {
   if (await objectExists(objectKey)) return false
 
   await r2Client.send(new PutObjectCommand({
@@ -126,34 +138,104 @@ async function uploadToR2(filePath, objectKey) {
   return true
 }
 
-const foodImages = await findFoodImages(foodDirectory)
-const fileContents = await readFile(foodDataFile, 'utf8')
-let uploadedImageCount = 0
-const missingImages = (await Promise.all(foodImages.map(async (filePath) => {
-  const localSource = toPublicSource(filePath)
-  const objectKey = toR2ObjectKey(filePath)
-  const r2Source = r2IsConfigured ? toR2PublicSource(objectKey) : null
+async function uploadThumbnailToR2(filePath, objectKey, variant) {
+  if (await objectExists(objectKey)) return false
 
-  if (r2IsConfigured && await uploadToR2(filePath, objectKey)) {
-    uploadedImageCount += 1
-    console.log(`Uploaded ${objectKey} to R2.`)
+  const thumbnail = await sharp(filePath)
+    .rotate()
+    .resize({
+      width: variant.width,
+      height: variant.height,
+      fit: 'cover',
+      position: 'centre',
+    })
+    .webp({ quality: variant.quality, effort: 4 })
+    .toBuffer()
+
+  await r2Client.send(new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME,
+    Key: objectKey,
+    Body: thumbnail,
+    ContentType: 'image/webp',
+    CacheControl: 'public, max-age=31536000, immutable',
+  }))
+
+  return true
+}
+
+async function mapWithConcurrency(items, concurrency, callback) {
+  const results = new Array(items.length)
+  let nextIndex = 0
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex
+      nextIndex += 1
+      results[currentIndex] = await callback(items[currentIndex], currentIndex)
+    }
   }
 
-  if (hasSource(fileContents, localSource) || (r2Source && hasSource(fileContents, r2Source))) return null
+  const workerCount = Math.min(concurrency, items.length)
+  await Promise.all(Array.from({ length: workerCount }, () => worker()))
+  return results
+}
+
+await mkdir(foodDirectory, { recursive: true })
+const foodImages = await findFoodImages(foodDirectory)
+const fileContents = await readFile(foodDataFile, 'utf8')
+const syncResults = await mapWithConcurrency(foodImages, syncConcurrency, async (filePath) => {
+  const localSource = toPublicSource(filePath)
+  const originalObjectKey = toR2ObjectKey(filePath)
+  const r2Source = r2IsConfigured ? toR2PublicSource(originalObjectKey) : null
+  let uploadedOriginal = false
+  let uploadedThumbnailCount = 0
+
+  if (r2IsConfigured) {
+    uploadedOriginal = await uploadOriginalToR2(filePath, originalObjectKey)
+    if (uploadedOriginal) console.log(`Uploaded ${originalObjectKey} to R2.`)
+
+    for (const variant of thumbnailVariants) {
+      const thumbnailObjectKey = toR2ThumbnailObjectKey(filePath, variant.width)
+      const uploadedThumbnail = await uploadThumbnailToR2(filePath, thumbnailObjectKey, variant)
+      if (uploadedThumbnail) {
+        uploadedThumbnailCount += 1
+        console.log(`Uploaded ${thumbnailObjectKey} to R2.`)
+      }
+    }
+  }
+
+  if (hasSource(fileContents, localSource) || (r2Source && hasSource(fileContents, r2Source))) {
+    return { uploadedOriginal, uploadedThumbnailCount, missingImage: null }
+  }
 
   const fileStats = await stat(filePath)
   return {
-    source: r2Source ?? localSource,
-    addedAt: fileStats.birthtimeMs || fileStats.ctimeMs || fileStats.mtimeMs,
+    uploadedOriginal,
+    uploadedThumbnailCount,
+    missingImage: {
+      source: r2Source ?? localSource,
+      addedAt: fileStats.birthtimeMs || fileStats.ctimeMs || fileStats.mtimeMs,
+    },
   }
-})))
+})
+const uploadedOriginalCount = syncResults.filter((result) => result.uploadedOriginal).length
+const uploadedThumbnailCount = syncResults.reduce((count, result) => count + result.uploadedThumbnailCount, 0)
+const missingImages = syncResults
+  .map((result) => result.missingImage)
   .filter((image) => image !== null)
   .sort((left, right) => right.addedAt - left.addedAt || left.source.localeCompare(right.source))
 
-if (missingImages.length === 0) {
-  if (uploadedImageCount > 0) {
-    console.log(`Uploaded ${uploadedImageCount} food photo${uploadedImageCount === 1 ? '' : 's'} to R2.`)
+function logUploadSummary() {
+  if (uploadedOriginalCount > 0) {
+    console.log(`Uploaded ${uploadedOriginalCount} original food photo${uploadedOriginalCount === 1 ? '' : 's'} to R2.`)
   }
+  if (uploadedThumbnailCount > 0) {
+    console.log(`Uploaded ${uploadedThumbnailCount} optimized thumbnail variant${uploadedThumbnailCount === 1 ? '' : 's'} to R2.`)
+  }
+}
+
+if (missingImages.length === 0) {
+  logUploadSummary()
   console.log('Food photo data is already synchronized.')
   process.exit(0)
 }
@@ -182,7 +264,5 @@ const updatedContents = [
 ].join('')
 
 await writeFile(foodDataFile, updatedContents, 'utf8')
-if (uploadedImageCount > 0) {
-  console.log(`Uploaded ${uploadedImageCount} food photo${uploadedImageCount === 1 ? '' : 's'} to R2.`)
-}
+logUploadSummary()
 console.log(`Added ${missingImages.length} new food photo entr${missingImages.length === 1 ? 'y' : 'ies'}.`)

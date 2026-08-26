@@ -1,5 +1,13 @@
 # React + TypeScript + Vite
 
+## Food photo workflow
+
+1. Copy uniquely named images into `public/images/food/`.
+2. Run `npm run food:sync`, or add the files while `npm run dev` is running.
+3. Fill in the generated entries at the top of `src/data/foodPhotos.ts`. A valid `YYYY-MM-DD` date is required before a photo appears.
+
+The sync uploads originals to Cloudflare R2, generates 400px and 800px WebP gallery thumbnails, and skips objects that already exist. Gallery cards load responsive thumbnails; opening a card loads its full original. R2 credentials belong in the Git-ignored `.env.local` file using the variables shown in `.env.example`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

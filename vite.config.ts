@@ -41,15 +41,18 @@ export default defineConfig(({ command }) => {
         name: 'food-photo-sync',
         configureServer(server) {
           const normalizedFoodDirectory = fromRoot('public/images/food').replaceAll('\\', '/').toLowerCase()
+          let syncTimer: ReturnType<typeof setTimeout> | undefined
 
           server.watcher.add(fromRoot('public/images/food'))
           server.watcher.on('add', (filePath) => {
             const normalizedFilePath = filePath.replaceAll('\\', '/').toLowerCase()
 
             if (normalizedFilePath.startsWith(`${normalizedFoodDirectory}/`)) {
-              syncFoodPhotos()
+              clearTimeout(syncTimer)
+              syncTimer = setTimeout(syncFoodPhotos, 500)
             }
           })
+          server.httpServer?.once('close', () => clearTimeout(syncTimer))
         },
       },
       {

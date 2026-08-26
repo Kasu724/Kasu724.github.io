@@ -1,6 +1,31 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { formatFoodPhotoDate, groupFoodPhotosByMonth } from '../data/foodPhotos'
-import type { DisplayableFoodPhoto } from '../types/food'
+import type { DisplayableFoodPhoto, FoodPhotoGroup } from '../types/food'
+
+const thumbnailWidths = [400, 800] as const
+const initialVisiblePhotoCount = 24
+const photoBatchSize = 24
+
+function getFoodThumbnailSource(source: string, width: typeof thumbnailWidths[number]) {
+  const originalsMarker = '/originals/'
+  const markerIndex = source.indexOf(originalsMarker)
+
+  if (markerIndex === -1) return source
+
+  const sourcePrefix = source.slice(0, markerIndex)
+  const objectKey = source.slice(markerIndex + originalsMarker.length)
+  return `${sourcePrefix}/thumbnails/${width}w/${objectKey}.webp`
+}
+
+function getVisibleFoodPhotoGroups(groups: FoodPhotoGroup[], maximumPhotoCount: number) {
+  let remainingPhotoCount = maximumPhotoCount
+
+  return groups.flatMap((group) => {
+    const photos = group.photos.slice(0, remainingPhotoCount)
+    remainingPhotoCount -= photos.length
+    return photos.length > 0 ? [{ ...group, photos }] : []
+  })
+}
 
 type FoodPhotoSummaryProps = {
   photo: DisplayableFoodPhoto
@@ -28,12 +53,17 @@ function FoodPhotoSummary({ photo, id, className = '', role }: FoodPhotoSummaryP
 
 type FoodPhotoCardProps = {
   photo: DisplayableFoodPhoto
+  priority?: boolean
   onOpen: (origin: HTMLButtonElement) => void
 }
 
-function FoodPhotoCard({ photo, onOpen }: FoodPhotoCardProps) {
+function FoodPhotoCard({ photo, priority = false, onOpen }: FoodPhotoCardProps) {
   const tooltipId = useId()
   const formattedDate = formatFoodPhotoDate(photo.date)
+  const thumbnailSource = getFoodThumbnailSource(photo.src, 800)
+  const thumbnailSourceSet = thumbnailWidths
+    .map((width) => `${getFoodThumbnailSource(photo.src, width)} ${width}w`)
+    .join(', ')
   const imageAlt = photo.alt?.trim()
     || photo.caption?.trim()
     || `Food photographed on ${formattedDate}`
@@ -48,7 +78,22 @@ function FoodPhotoCard({ photo, onOpen }: FoodPhotoCardProps) {
       onClick={(event) => onOpen(event.currentTarget)}
     >
       <span className="food-photo-card__image-wrap">
-        <img src={photo.src} alt={imageAlt} loading="lazy" decoding="async" />
+        <img
+          src={thumbnailSource}
+          srcSet={thumbnailSourceSet}
+          sizes="(max-width: 40rem) calc(100vw - 2rem), (max-width: 64rem) calc(50vw - 2rem), 24rem"
+          width="800"
+          height="600"
+          alt={imageAlt}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
+          decoding="async"
+          onError={(event) => {
+            if (event.currentTarget.src === photo.src) return
+            event.currentTarget.srcset = ''
+            event.currentTarget.src = photo.src
+          }}
+        />
       </span>
       <FoodPhotoSummary
         photo={photo}
@@ -138,9 +183,31 @@ function FoodPhotoDialog({ photo, isClosing, onClose, onExitComplete }: FoodPhot
 
 function FoodGallery() {
   const groups = groupFoodPhotosByMonth()
+  const totalPhotoCount = groups.reduce((count, group) => count + group.photos.length, 0)
+  const [visiblePhotoCount, setVisiblePhotoCount] = useState(initialVisiblePhotoCount)
   const [selectedPhoto, setSelectedPhoto] = useState<DisplayableFoodPhoto | null>(null)
   const [isClosing, setIsClosing] = useState(false)
   const previouslyFocusedElement = useRef<HTMLElement | null>(null)
+  const loadMoreRef = useRef<HTMLButtonElement | null>(null)
+  const visibleGroups = getVisibleFoodPhotoGroups(groups, visiblePhotoCount)
+  const hasMorePhotos = visiblePhotoCount < totalPhotoCount
+
+  useEffect(() => {
+    const loadMoreElement = loadMoreRef.current
+
+    if (!loadMoreElement || !hasMorePhotos || !('IntersectionObserver' in window)) return
+
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return
+
+      setVisiblePhotoCount((currentCount) => (
+        Math.min(currentCount + photoBatchSize, totalPhotoCount)
+      ))
+    }, { rootMargin: '600px 0px' })
+
+    observer.observe(loadMoreElement)
+    return () => observer.disconnect()
+  }, [hasMorePhotos, totalPhotoCount])
 
   useEffect(() => {
     if (!selectedPhoto) return
@@ -192,17 +259,18 @@ function FoodGallery() {
 
   return (
     <div className="food-gallery">
-      {groups.map((group) => {
+      {visibleGroups.map((group, groupIndex) => {
         const headingId = `food-month-${group.key}`
 
         return (
           <section className="food-month" key={group.key} aria-labelledby={headingId}>
             <h2 id={headingId}>{group.label}</h2>
             <div className="food-month__grid">
-              {group.photos.map((photo) => (
+              {group.photos.map((photo, photoIndex) => (
                 <FoodPhotoCard
                   key={`${photo.date}-${photo.src}`}
                   photo={photo}
+                  priority={groupIndex === 0 && photoIndex < 3}
                   onOpen={(origin) => openPhoto(photo, origin)}
                 />
               ))}
@@ -210,6 +278,22 @@ function FoodGallery() {
           </section>
         )
       })}
+
+      {hasMorePhotos && (
+        <div className="food-gallery__load-more">
+          <button
+            ref={loadMoreRef}
+            type="button"
+            onClick={() => {
+              setVisiblePhotoCount((currentCount) => (
+                Math.min(currentCount + photoBatchSize, totalPhotoCount)
+              ))
+            }}
+          >
+            Load more photos
+          </button>
+        </div>
+      )}
 
       {selectedPhoto && (
         <FoodPhotoDialog

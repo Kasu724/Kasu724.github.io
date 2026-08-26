@@ -1200,6 +1200,31 @@
   text-align: center;
 }
 
+.food-gallery__load-more {
+  display: grid;
+  place-items: center;
+}
+
+.food-gallery__load-more > button {
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.food-gallery__load-more > button:is(:hover, :focus-visible) {
+  background: var(--color-accent);
+  color: var(--color-page);
+  transform: translateY(calc(var(--motion-distance-sm) * -1));
+}
+
 .food-month {
   display: grid;
   gap: var(--space-4);
