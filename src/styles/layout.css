@@ -9,7 +9,7 @@ main {
 footer {
   width: min(
     calc(100% - (var(--page-inline-padding) * 2)),
-    var(--content-max-width)
+    var(--chrome-max-width)
   );
   margin-inline: auto;
 }
@@ -39,10 +39,10 @@ footer {
   gap: var(--space-8);
   width: min(
     calc(100% - (var(--page-inline-padding) * 2)),
-    var(--content-max-width)
+    var(--chrome-max-width)
   );
   margin-inline: auto;
-  padding: var(--space-6) var(--header-footer-item-inset);
+  padding: var(--space-6) var(--header-item-inset);
 }
 
 .site-header__brand {
@@ -147,7 +147,7 @@ main > section {
 }
 
 .site-footer {
-  padding-block: var(--space-6) var(--space-8);
+  padding-block: var(--space-6) var(--space-6);
 }
 
 .site-footer__inner {
@@ -155,11 +155,11 @@ main > section {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
-  min-height: 4rem;
-  padding: var(--space-4) var(--header-footer-item-inset);
-  border: var(--border-width) solid var(--color-border);
+  min-height: 3rem;
+  padding: var(--space-3) var(--footer-item-inset);
+  border: 0;
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
+  background: var(--ctp-crust);
   color: var(--color-text-muted);
   font-family: var(--font-display);
   font-size: var(--text-meta);
@@ -553,7 +553,7 @@ main > section {
   }
 
   .site-footer__inner {
-    padding: var(--space-4);
+    padding: var(--space-3) var(--space-4);
   }
 
   .site-footer__identity,

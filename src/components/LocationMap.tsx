@@ -43,7 +43,7 @@ function LocationMap() {
 
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
-        attributionControl: true,
+        attributionControl: false,
         dragging: true,
         scrollWheelZoom: true,
         doubleClickZoom: true,
@@ -54,8 +54,7 @@ function LocationMap() {
 
       const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        attribution: '',
         keepBuffer: 4,
         updateWhenIdle: false,
         updateWhenZooming: false,
