@@ -378,6 +378,8 @@ main > section {
   background: var(--color-surface-elevated);
   color: var(--color-text);
   content: attr(data-tooltip);
+  width: max-content;
+  box-sizing: border-box;
   font-family: var(--font-display);
   font-size: var(--text-meta);
   line-height: 1.3;

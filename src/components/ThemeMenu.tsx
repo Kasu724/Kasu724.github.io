@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 const paletteNames = ['latte', 'frappe', 'macchiato', 'mocha'] as const
 const accentNames = [
@@ -89,8 +89,26 @@ function updateFavicon(accent: AccentName) {
 }
 
 function ThemeMenu() {
+  const themeMenuRef = useRef<HTMLDetailsElement>(null)
+  const [isOpen, setIsOpen] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
   const [palette, setPalette] = useState<PaletteName>(getInitialPalette)
   const [accent, setAccent] = useState<AccentName>(getInitialAccent)
+
+  useEffect(() => {
+    function closeMenuOnOutsidePointer(event: PointerEvent) {
+      const themeMenu = themeMenuRef.current
+
+      if (!isOpen || !(event.target instanceof Node) || themeMenu?.contains(event.target)) {
+        return
+      }
+
+      setIsClosing(true)
+    }
+
+    document.addEventListener('pointerdown', closeMenuOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeMenuOnOutsidePointer)
+  }, [isOpen])
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = palette
@@ -110,10 +128,32 @@ function ThemeMenu() {
   }, [palette, accent])
 
   return (
-    <details className="theme-menu">
-      <summary>Theme</summary>
+    <details className="theme-menu" ref={themeMenuRef} open={isOpen}>
+      <summary
+        onClick={(event) => {
+          event.preventDefault()
 
-      <div className="theme-menu__panel">
+          if (isClosing) {
+            setIsClosing(false)
+          } else if (isOpen) {
+            setIsClosing(true)
+          } else {
+            setIsOpen(true)
+          }
+        }}
+      >
+        Theme
+      </summary>
+
+      <div
+        className={`theme-menu__panel${isClosing ? ' is-closing' : ''}`}
+        onTransitionEnd={(event) => {
+          if (isClosing && event.propertyName === 'opacity') {
+            setIsClosing(false)
+            setIsOpen(false)
+          }
+        }}
+      >
         <fieldset className="theme-menu__palettes">
           <legend>Palette</legend>
           <div>
