@@ -680,7 +680,7 @@
   display: grid;
   place-items: center;
   padding: var(--space-6);
-  background: transparent;
+  background: color-mix(in srgb, var(--color-page) 58%, transparent);
   animation: project-backdrop-blur-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -723,6 +723,7 @@
   position: relative;
   display: flex;
   width: min(46rem, 100%);
+  min-height: min(38rem, calc(100dvh - (var(--space-6) * 2)));
   max-height: min(46rem, calc(100dvh - (var(--space-6) * 2)));
   flex-direction: column;
   overflow: auto;
