@@ -58,9 +58,10 @@ function LocationMap() {
       }
 
       const tileLayer = L.tileLayer(
-        `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoApiKey)}`,
+        `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=${encodeURIComponent(cartoApiKey)}`,
         {
           maxZoom: 19,
+          detectRetina: false,
           attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
           subdomains: 'abcd',
           keepBuffer: 4,

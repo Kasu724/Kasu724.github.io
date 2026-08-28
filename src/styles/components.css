@@ -1837,6 +1837,7 @@
 }
 
 .contribution-calendar__area {
+  --contribution-green: var(--accent-green);
   position: relative;
 }
 
@@ -1901,19 +1902,19 @@
 }
 
 .contribution-calendar__cell--level-1 {
-  background: color-mix(in srgb, var(--accent-green) 28%, var(--color-surface-elevated));
+  background: color-mix(in srgb, var(--contribution-green) 20%, var(--color-surface-elevated));
 }
 
 .contribution-calendar__cell--level-2 {
-  background: color-mix(in srgb, var(--accent-green) 48%, var(--color-surface-elevated));
+  background: color-mix(in srgb, var(--contribution-green) 45%, var(--color-surface-elevated));
 }
 
 .contribution-calendar__cell--level-3 {
-  background: color-mix(in srgb, var(--accent-green) 72%, var(--color-surface-elevated));
+  background: color-mix(in srgb, var(--contribution-green) 75%, var(--color-surface-elevated));
 }
 
 .contribution-calendar__cell--level-4 {
-  background: var(--accent-green);
+  background: var(--contribution-green);
 }
 
 .contribution-calendar__cell--empty {
@@ -2300,8 +2301,18 @@
   background: var(--color-surface-elevated);
 }
 
-.contact-card__map .leaflet-tile {
-  filter: grayscale(1) invert(var(--map-tile-invert)) brightness(var(--map-tile-brightness)) contrast(var(--map-tile-contrast));
+.contact-card__map .leaflet-container img.leaflet-tile {
+  /* Leaflet's plus-lighter workaround produces color blocks on dark cards. */
+  mix-blend-mode: normal;
+}
+
+.contact-card__map .leaflet-attribution-flag {
+  display: inline !important;
+  width: 1em;
+  height: 0.6669em;
+  fill: currentColor;
+  stroke: none;
+  vertical-align: baseline !important;
 }
 
 .contact-card__location-details {
