@@ -1,83 +1,117 @@
-# React + TypeScript + Vite
+# Portfolio
+
+My personal portfolio [(Kevin Lui)](https://github.com/Kasu724), built with React, TypeScript, and Vite.
+
+It contains my experience, skills, education, projects, and some food photography. It is deployed as a static site to GitHub Pages.
+
+## Features
+
+- Responsive pages with sections for an intro, skills, experience, projects, education, and additional information
+- Additional `/about/`, `/projects/`, and `/food/` pages
+- Client-side page transitions with browser history support and reduced-motion handling
+- Project and profile content stored in typed data modules under `src/data/`
+- Location map powered by Leaflet
+- Food gallery with responsive WebP thumbnails and full-resolution originals stored in Cloudflare R2
+- [Catpuccin](https://catppuccin.com) theme controls and GitHub contribution/commit data sections
+- Automatic deployment through GitHub Actions and GitHub Pages
+
+## Tech stack
+
+- React 19
+- TypeScript
+- Vite
+- CSS
+- Leaflet
+- Cloudflare R2 and Sharp for food-photo processing
+- GitHub Actions for deployment
+
+## Running development environment
+
+### Requirements
+
+- Node.js LTS
+- npm
+- Git, if you want deployment metadata to be populated locally
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Configure environment variables
+
+Copy `.env.example` to `.env.local` and fill in the values needed for food-photo synchronization:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+The frontend only uses variables prefixed with `VITE_`. The R2 variables are read by the local sync script and must not be exposed in client-side code. `.env.local` is ignored by Git.
+
+### Run locally
+
+```bash
+npm run dev
+```
+
+Vite serves the portfolio locally with hot module replacement. The development pre-script also runs the food-photo synchronization step.
+
+### Build and preview
+
+```bash
+npm run build
+npm run preview
+```
+
+The production build is written to `dist/` and includes the four HTML entry points:
+
+- `/`
+- `/about/`
+- `/projects/`
+- `/food/`
+
+## Available scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Synchronize food photos, type-check, and create a production build |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run food:sync` | Process and upload new food photos |
+
+## Managing content
+
+Most portfolio content is kept separate from layout code:
+
+- `src/data/experience.ts` — work experience
+- `src/data/projects.ts` — project cards and links
+- `src/data/foodPhotos.ts` — food-gallery metadata
+- `src/data/githubContributions.ts` and `src/data/githubCommits.ts` — GitHub activity data
+- `src/data/socialLinks.ts` — contact and social links
+- `src/components/` — reusable sections and UI components
+- `src/pages/` — dedicated page compositions
+- `src/styles/` — base, theme, layout, and component styles
+
+To update the portfolio, edit the relevant data module or component, then run `npm run lint` and `npm run build`.
 
 ## Food photo workflow
 
-1. Copy uniquely named images into `public/images/food/`.
-2. Run `npm run food:sync`, or add the files while `npm run dev` is running.
-3. Fill in the generated entries at the top of `src/data/foodPhotos.ts`. A valid `YYYY-MM-DD` date is required before a photo appears.
+1. Copy uniquely named source images into `public/images/food/`.
+2. Run `npm run food:sync`, or add images while `npm run dev` is running.
+3. Complete the generated entries at the top of `src/data/foodPhotos.ts`.
+4. Include a valid `YYYY-MM-DD` date before a photo appears in the gallery.
 
-The sync uploads originals to Cloudflare R2, generates 400px and 800px WebP gallery thumbnails, and skips objects that already exist. Gallery cards load responsive thumbnails; opening a card loads its full original. R2 credentials belong in the Git-ignored `.env.local` file using the variables shown in `.env.example`.
+The sync script uploads originals to Cloudflare R2, generates 400px and 800px WebP thumbnails, and skips objects that already exist. Gallery cards load responsive thumbnails; opening a card loads the full original.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Deployment
 
-Currently, two official plugins are available:
+Pushes to `main` trigger `.github/workflows/deploy.yml`, which:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Installs dependencies with `npm ci`
+2. Builds the site with the GitHub commit SHA as deployment metadata
+3. Uploads `dist/` as a GitHub Pages artifact
+4. Deploys the artifact to GitHub Pages
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+The repository’s GitHub Pages environment must be configured to use GitHub Actions. If the food gallery is included in a deployment, the required R2 configuration must also be available to the build environment.
