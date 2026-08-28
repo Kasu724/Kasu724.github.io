@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { socialLinks } from '../data/socialLinks'
 import ProfileImage from '../components/ProfileImage'
 import {
@@ -149,6 +150,90 @@ const siteServices = [
   },
 ] as const
 
+type AboutTooltipPosition = CSSProperties & {
+  '--about-tooltip-left': string
+  '--about-tooltip-top': string
+}
+
+function getCssLength(name: string, fallback: number) {
+  const rootStyle = getComputedStyle(document.documentElement)
+  const value = rootStyle.getPropertyValue(name).trim()
+  const amount = Number.parseFloat(value)
+  if (!Number.isFinite(amount)) return fallback
+  if (value.endsWith('rem')) {
+    return amount * Number.parseFloat(rootStyle.fontSize || '16')
+  }
+  return amount
+}
+
+function AboutTooltipTrigger() {
+  const triggerRef = useRef<HTMLSpanElement>(null)
+  const tooltipRef = useRef<HTMLSpanElement>(null)
+  const [position, setPosition] = useState<AboutTooltipPosition | undefined>()
+
+  useLayoutEffect(() => {
+    function updatePosition() {
+      const trigger = triggerRef.current
+      const tooltip = tooltipRef.current
+      if (!trigger || !tooltip || !window.matchMedia('(max-width: 36rem)').matches) return
+
+      const triggerBounds = trigger.getBoundingClientRect()
+      const tooltipWidth = tooltip.offsetWidth
+      const tooltipHeight = tooltip.offsetHeight
+      const rootStyle = getComputedStyle(document.documentElement)
+      const rootFontSize = Number.parseFloat(rootStyle.fontSize || '16')
+      const gutter = getCssLength('--space-4', rootFontSize)
+      const gap = getCssLength('--space-2', rootFontSize / 2)
+      const viewportWidth = document.documentElement.clientWidth || window.innerWidth
+      const viewportHeight = window.innerHeight
+      const left = Math.max(
+        gutter,
+        Math.min(
+          triggerBounds.left + (triggerBounds.width / 2) - (tooltipWidth / 2),
+          viewportWidth - gutter - tooltipWidth,
+        ),
+      )
+      const preferredTop = triggerBounds.top - tooltipHeight - gap
+      const top = preferredTop >= gutter
+        ? preferredTop
+        : Math.min(triggerBounds.bottom + gap, viewportHeight - gutter - tooltipHeight)
+
+      setPosition({
+        '--about-tooltip-left': `${Math.round(left)}px`,
+        '--about-tooltip-top': `${Math.round(Math.max(gutter, top))}px`,
+      })
+    }
+
+    updatePosition()
+    window.addEventListener('resize', updatePosition)
+    window.addEventListener('scroll', updatePosition, true)
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      window.removeEventListener('scroll', updatePosition, true)
+    }
+  }, [])
+
+  return (
+    <span
+      ref={triggerRef}
+      className="about-page__inline-link about-page__tooltip-trigger"
+      tabIndex={0}
+      aria-describedby="ssmif-tooltip"
+    >
+      SSMIF
+      <span
+        ref={tooltipRef}
+        className="about-page__tooltip"
+        id="ssmif-tooltip"
+        role="tooltip"
+        style={position}
+      >
+        Stevens Student Managed Investment Fund
+      </span>
+    </span>
+  )
+}
+
 function AboutPage() {
   return (
     <main className="standalone-page">
@@ -166,16 +251,7 @@ function AboutPage() {
                 <strong>Quantitative Finance</strong> and <strong>Mathematics</strong>. I'm a
                 previous SWE intern at <strong>Panasonic North America</strong> and the{' '}
                 <strong>Head Quantitative Developer</strong> at{' '}
-                <span
-                  className="about-page__inline-link about-page__tooltip-trigger"
-                  tabIndex={0}
-                  aria-describedby="ssmif-tooltip"
-                >
-                  SSMIF
-                  <span className="about-page__tooltip" id="ssmif-tooltip" role="tooltip">
-                    Stevens Student Managed Investment Fund
-                  </span>
-                </span>
+                <AboutTooltipTrigger />
                 . I like to make cool{' '}
                 <a className="about-page__inline-link" href="/projects/">projects</a> and do
                 game dev when I'm bored.

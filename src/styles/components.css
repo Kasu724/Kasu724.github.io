@@ -213,6 +213,22 @@
   .theme-menu__panel {
     right: calc(var(--header-item-inset) * -1);
   }
+
+  /* Keep swatches in a stable grid so each row has predictable edge items. */
+  .theme-menu__accents > div {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .theme-menu__accents button:nth-child(5n + 1) .theme-menu__accent-tooltip {
+    left: 0;
+    translate: 0 0;
+  }
+
+  .theme-menu__accents button:nth-child(5n) .theme-menu__accent-tooltip {
+    right: 0;
+    left: auto;
+    translate: 0 0;
+  }
 }
 
 /* Content sections */
@@ -1980,6 +1996,21 @@
 }
 
 @media (max-width: 36rem) {
+  .about-page__tooltip {
+    position: fixed;
+    top: var(--about-tooltip-top, 1rem);
+    bottom: auto;
+    left: var(--about-tooltip-left, 1rem);
+    width: min(25rem, calc(100vw - (var(--space-4) * 2)));
+    max-width: calc(100vw - (var(--space-4) * 2));
+    white-space: normal;
+    transform: translate(0, var(--space-2));
+  }
+
+  .about-page__tooltip-trigger:is(:hover, :focus-visible) .about-page__tooltip {
+    transform: translate(0, 0);
+  }
+
   .contribution-card {
     padding: var(--space-4);
   }
@@ -1991,6 +2022,12 @@
   .contribution-calendar {
     --contribution-cell-size: 0.68rem;
     --contribution-cell-gap: 0.18rem;
+  }
+
+  .contribution-calendar__tooltip {
+    left: 50% !important;
+    max-width: calc(100vw - (var(--space-4) * 2));
+    transform: translate(-50%, calc(-100% - var(--space-2)));
   }
 }
 

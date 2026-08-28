@@ -59,9 +59,7 @@ function getInitialPalette(): PaletteName {
     return storedPalette
   }
 
-  return window.matchMedia('(prefers-color-scheme: light)').matches
-    ? 'latte'
-    : 'mocha'
+  return 'mocha'
 }
 
 function getInitialAccent(): AccentName {

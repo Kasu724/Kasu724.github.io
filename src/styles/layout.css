@@ -551,7 +551,28 @@ main > section {
 
 @media (max-width: 34rem) {
   .site-header {
-    position: static;
+    /* Keep the mobile header in normal flow while retaining its stacking layer. */
+    position: relative;
+  }
+
+  /* Keep hidden metric tooltips from extending the page's scrollable width. */
+  .site-footer__metric.site-footer__tooltip::after {
+    display: none;
+  }
+
+  .site-footer__metric.site-footer__tooltip:is(:hover, :focus-visible)::after {
+    display: block;
+  }
+
+  .site-footer__metric.site-footer__tooltip:first-child::after {
+    left: calc(-1 * var(--space-4));
+    translate: 0 0;
+  }
+
+  .site-footer__metric.site-footer__tooltip:nth-child(2)::after {
+    right: 0;
+    left: auto;
+    translate: 0 0;
   }
 
   .site-footer__inner {
