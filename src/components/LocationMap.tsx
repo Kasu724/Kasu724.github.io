@@ -43,6 +43,7 @@ function LocationMap() {
 
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
+        attributionControl: false,
         dragging: true,
         scrollWheelZoom: true,
         doubleClickZoom: true,
@@ -62,7 +63,7 @@ function LocationMap() {
         {
           maxZoom: 19,
           detectRetina: false,
-          attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+          attribution: '',
           subdomains: 'abcd',
           keepBuffer: 4,
           updateWhenIdle: false,

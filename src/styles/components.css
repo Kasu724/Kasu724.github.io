@@ -2301,6 +2301,10 @@
   background: var(--color-surface-elevated);
 }
 
+.contact-card__map .leaflet-tile {
+  filter: grayscale(1) invert(var(--map-tile-invert)) brightness(var(--map-tile-brightness)) contrast(var(--map-tile-contrast));
+}
+
 .contact-card__map .leaflet-container img.leaflet-tile {
   /* Leaflet's plus-lighter workaround produces color blocks on dark cards. */
   mix-blend-mode: normal;
