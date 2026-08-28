@@ -495,7 +495,7 @@
 }
 
 .skill-card__name {
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
   font-size: clamp(0.75rem, 1.4vw, 0.875rem);
   white-space: pre-line;
 }
