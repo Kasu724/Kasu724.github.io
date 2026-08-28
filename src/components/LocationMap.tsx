@@ -43,7 +43,6 @@ function LocationMap() {
 
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
-        attributionControl: false,
         dragging: true,
         scrollWheelZoom: true,
         doubleClickZoom: true,
@@ -52,13 +51,23 @@ function LocationMap() {
         touchZoom: true,
       }).setView(hobokenCoordinates, mapZoom)
 
-      const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: '',
-        keepBuffer: 4,
-        updateWhenIdle: false,
-        updateWhenZooming: false,
-      })
+      const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY?.trim()
+
+      if (!cartoApiKey) {
+        throw new Error('VITE_CARTO_API_KEY is not configured')
+      }
+
+      const tileLayer = L.tileLayer(
+        `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoApiKey)}`,
+        {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+          subdomains: 'abcd',
+          keepBuffer: 4,
+          updateWhenIdle: false,
+          updateWhenZooming: false,
+        },
+      )
       tileLayer.on('tileerror', () => setServiceHealth('location', false))
       tileLayer.addTo(map)
 

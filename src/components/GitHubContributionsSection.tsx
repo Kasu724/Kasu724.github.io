@@ -99,12 +99,14 @@ function getLastSixMonths(data: GitHubContributions): GitHubContributions {
 function ContributionCalendar({ data }: { data: GitHubContributions }) {
   const areaRef = useRef<HTMLDivElement>(null)
   const cellRefs = useRef<Array<HTMLSpanElement | null>>([])
+  const tooltipCellRef = useRef<HTMLSpanElement | null>(null)
   const [tooltip, setTooltip] = useState<{
     date: string
     label: string
     left: number
     top: number
   } | null>(null)
+  const tooltipDate = tooltip?.date
   const { weeks, months } = useMemo(
     () => buildCalendar(data.contributions),
     [data.contributions],
@@ -121,24 +123,42 @@ function ContributionCalendar({ data }: { data: GitHubContributions }) {
   const calendarStyle: CalendarStyle = { '--contribution-week-count': weeks.length }
 
   function showTooltip(cell: HTMLSpanElement, day: GitHubContributionDay) {
-    const area = areaRef.current
-    if (!area) return
-
+    tooltipCellRef.current = cell
     const cellBounds = cell.getBoundingClientRect()
-    const areaBounds = area.getBoundingClientRect()
-    const tooltipHalfWidth = Math.min(128, areaBounds.width / 2)
-    const cellCenter = cellBounds.left - areaBounds.left + (cellBounds.width / 2)
 
     setTooltip({
       date: day.date,
       label: contributionLabel(day),
-      left: Math.min(
-        Math.max(cellCenter, tooltipHalfWidth),
-        areaBounds.width - tooltipHalfWidth,
-      ),
-      top: cellBounds.top - areaBounds.top,
+      left: cellBounds.left + (cellBounds.width / 2),
+      top: cellBounds.top,
     })
   }
+
+  useEffect(() => {
+    if (!tooltipDate) return
+
+    function updateTooltipPosition() {
+      const cell = tooltipCellRef.current
+      if (!cell) return
+
+      const cellBounds = cell.getBoundingClientRect()
+      setTooltip((currentTooltip) => currentTooltip
+        ? {
+          ...currentTooltip,
+          left: cellBounds.left + (cellBounds.width / 2),
+          top: cellBounds.top,
+        }
+        : null)
+    }
+
+    window.addEventListener('resize', updateTooltipPosition)
+    window.addEventListener('scroll', updateTooltipPosition, true)
+
+    return () => {
+      window.removeEventListener('resize', updateTooltipPosition)
+      window.removeEventListener('scroll', updateTooltipPosition, true)
+    }
+  }, [tooltipDate])
 
   function focusCell(index: number) {
     const cell = cellRefs.current[index]
@@ -233,13 +253,17 @@ function ContributionCalendar({ data }: { data: GitHubContributions }) {
                         }}
                         onBlur={(event) => {
                           if (!(event.relatedTarget instanceof Node) || !areaRef.current?.contains(event.relatedTarget)) {
+                            tooltipCellRef.current = null
                             setTooltip(null)
                           }
                         }}
                         onKeyDown={(event) => handleCellKeyDown(event, cellIndex)}
                         onPointerEnter={(event) => showTooltip(event.currentTarget, day)}
                         onPointerLeave={(event) => {
-                          if (document.activeElement !== event.currentTarget) setTooltip(null)
+                          if (document.activeElement !== event.currentTarget) {
+                            tooltipCellRef.current = null
+                            setTooltip(null)
+                          }
                         }}
                         key={day.date}
                       />

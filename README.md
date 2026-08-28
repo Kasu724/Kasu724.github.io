@@ -41,13 +41,15 @@ npm install
 
 ### Configure environment variables
 
-Copy `.env.example` to `.env.local` and fill in the values needed for food-photo synchronization:
+Copy `.env.example` to `.env.local` and fill in the values needed for the local app and food-photo synchronization:
 
 ```powershell
 Copy-Item .env.example .env.local
 ```
 
 The frontend only uses variables prefixed with `VITE_`. The R2 variables are read by the local sync script and must not be exposed in client-side code. `.env.local` is ignored by Git.
+
+Set `VITE_CARTO_API_KEY` to the CARTO Basemaps key provided for this site. For GitHub Pages, add the same value as the `CARTO_API_KEY` GitHub Actions secret so the deployment build can include it.
 
 ### Run locally
 

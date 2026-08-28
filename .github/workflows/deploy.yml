@@ -38,6 +38,7 @@ jobs:
       - name: Build
         env:
           VITE_DEPLOYMENT_COMMIT: ${{ github.sha }}
+          VITE_CARTO_API_KEY: ${{ secrets.CARTO_API_KEY }}
         run: npm run build
 
       - name: Configure Pages
