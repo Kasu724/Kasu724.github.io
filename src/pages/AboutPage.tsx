@@ -17,8 +17,11 @@ const siteStack = [
   'React 19',
   'TypeScript',
   'Vite',
-  'Custom CSS',
+  'CSS',
   'Leaflet',
+  'Node.js',
+  'Cloudflare R2',
+  'GitHub Actions',
   'GitHub Pages',
 ] as const
 
@@ -182,8 +185,8 @@ function AboutPage() {
                 playing Minecraft, and eating good{' '}
                 <a className="about-page__inline-link" href="/food/">food</a>. Feel free to
                 shoot me an{' '}
-                <a className="about-page__inline-link" href={socialLinks.email}>email</a> if
-                you'd like to chat.
+                <a className="about-page__inline-link" href={socialLinks.email}>email</a> or
+                message if you'd like to chat!
               </span>
             </p>
 

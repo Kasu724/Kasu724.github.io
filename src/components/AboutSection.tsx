@@ -16,7 +16,7 @@ function AboutSection() {
 
           <p>
             <span className="about-section__sentence">
-            I’m a <strong>Computer Science student</strong> at <strong>Stevens Institute of Technology</strong> with minors
+            I’m a <strong>Computer Science</strong> student at <strong>Stevens Institute of Technology</strong> with minors
             in <strong>Quantitative Finance</strong> and <strong>Mathematics</strong>, and a passion for building scalable
             software, AI systems, and quantitative tools.
             </span>
