@@ -10,7 +10,7 @@ const publicDirectory = join(repositoryRoot, 'public')
 const foodDirectory = join(publicDirectory, 'images', 'food')
 const foodDataFile = join(repositoryRoot, 'src', 'data', 'foodPhotos.ts')
 const supportedExtensions = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.webp'])
-const arrayOpeningMarker = 'export const foodPhotos: FoodPhoto[] = [\n'
+const arrayOpeningPattern = /export const foodPhotos: FoodPhoto\[\] = \[\r?\n/
 const r2OriginalPrefix = 'originals'
 const r2ThumbnailPrefix = 'thumbnails'
 const thumbnailVariants = [
@@ -104,6 +104,12 @@ function hasSource(fileContents, source) {
 
   return fileContents.includes(`src: ${doubleQuotedSource}`)
     || fileContents.includes(`src: ${singleQuotedSource}`)
+}
+
+function hasR2ObjectSource(fileContents, objectKey) {
+  const encodedKey = objectKey.split('/').map(encodeURIComponent).join('/')
+
+  return fileContents.includes(`/${encodedKey}"`) || fileContents.includes(`/${encodedKey}'`)
 }
 
 async function objectExists(objectKey) {
@@ -204,7 +210,11 @@ const syncResults = await mapWithConcurrency(foodImages, syncConcurrency, async 
     }
   }
 
-  if (hasSource(fileContents, localSource) || (r2Source && hasSource(fileContents, r2Source))) {
+  if (
+    hasSource(fileContents, localSource)
+    || hasR2ObjectSource(fileContents, originalObjectKey)
+    || (r2Source && hasSource(fileContents, r2Source))
+  ) {
     return { uploadedOriginal, uploadedThumbnailCount, missingImage: null }
   }
 
@@ -240,12 +250,14 @@ if (missingImages.length === 0) {
   process.exit(0)
 }
 
-const openingMarkerIndex = fileContents.indexOf(arrayOpeningMarker)
+const openingMarkerMatch = fileContents.match(arrayOpeningPattern)
 
-if (openingMarkerIndex === -1) {
+if (!openingMarkerMatch) {
   throw new Error(`Could not find the food photo array opening marker in ${foodDataFile}.`)
 }
 
+const openingMarkerIndex = openingMarkerMatch.index
+const lineEnding = openingMarkerMatch[0].endsWith('\r\n') ? '\r\n' : '\n'
 const newEntries = missingImages.map(({ source }) => [
   '  {',
   `    src: ${JSON.stringify(source)},`,
@@ -254,12 +266,12 @@ const newEntries = missingImages.map(({ source }) => [
   "    restaurant: '',",
   "    location: '',",
   '  },',
-].join('\n')).join('\n')
+].join(lineEnding)).join(lineEnding)
 
-const insertionIndex = openingMarkerIndex + arrayOpeningMarker.length
+const insertionIndex = openingMarkerIndex + openingMarkerMatch[0].length
 const updatedContents = [
   fileContents.slice(0, insertionIndex),
-  `${newEntries}\n`,
+  `${newEntries}${lineEnding}`,
   fileContents.slice(insertionIndex),
 ].join('')
 
