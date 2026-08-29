@@ -112,6 +112,16 @@ function hasR2ObjectSource(fileContents, objectKey) {
   return fileContents.includes(`/${encodedKey}"`) || fileContents.includes(`/${encodedKey}'`)
 }
 
+function replaceSource(fileContents, source, replacement) {
+  const replacementSource = `src: ${JSON.stringify(replacement)}`
+  const doubleQuotedSource = `src: ${JSON.stringify(source)}`
+  const singleQuotedSource = `src: '${source.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`
+
+  return fileContents
+    .replaceAll(doubleQuotedSource, replacementSource)
+    .replaceAll(singleQuotedSource, replacementSource)
+}
+
 async function objectExists(objectKey) {
   try {
     await r2Client.send(new HeadObjectCommand({
@@ -188,6 +198,15 @@ async function mapWithConcurrency(items, concurrency, callback) {
 
 await mkdir(foodDirectory, { recursive: true })
 const foodImages = await findFoodImages(foodDirectory)
+
+if (foodImages.length > 0 && !r2IsConfigured) {
+  throw new Error([
+    'R2 credentials are required to publish food photos.',
+    'Restore the five R2_* values in .env.local on this computer, then run npm run food:sync again.',
+    'The source photos are ignored by Git and cannot be served by GitHub Pages directly.',
+  ].join(' '))
+}
+
 const fileContents = await readFile(foodDataFile, 'utf8')
 const syncResults = await mapWithConcurrency(foodImages, syncConcurrency, async (filePath) => {
   const localSource = toPublicSource(filePath)
@@ -210,18 +229,33 @@ const syncResults = await mapWithConcurrency(foodImages, syncConcurrency, async 
     }
   }
 
+  if (r2Source && hasSource(fileContents, localSource)) {
+    return {
+      uploadedOriginal,
+      uploadedThumbnailCount,
+      missingImage: null,
+      sourceReplacement: { source: localSource, replacement: r2Source },
+    }
+  }
+
   if (
-    hasSource(fileContents, localSource)
+    (!r2IsConfigured && hasSource(fileContents, localSource))
     || hasR2ObjectSource(fileContents, originalObjectKey)
     || (r2Source && hasSource(fileContents, r2Source))
   ) {
-    return { uploadedOriginal, uploadedThumbnailCount, missingImage: null }
+    return {
+      uploadedOriginal,
+      uploadedThumbnailCount,
+      missingImage: null,
+      sourceReplacement: null,
+    }
   }
 
   const fileStats = await stat(filePath)
   return {
     uploadedOriginal,
     uploadedThumbnailCount,
+    sourceReplacement: null,
     missingImage: {
       source: r2Source ?? localSource,
       addedAt: fileStats.birthtimeMs || fileStats.ctimeMs || fileStats.mtimeMs,
@@ -230,6 +264,9 @@ const syncResults = await mapWithConcurrency(foodImages, syncConcurrency, async 
 })
 const uploadedOriginalCount = syncResults.filter((result) => result.uploadedOriginal).length
 const uploadedThumbnailCount = syncResults.reduce((count, result) => count + result.uploadedThumbnailCount, 0)
+const sourceReplacements = syncResults
+  .map((result) => result.sourceReplacement)
+  .filter((replacement) => replacement !== null)
 const missingImages = syncResults
   .map((result) => result.missingImage)
   .filter((image) => image !== null)
@@ -242,39 +279,51 @@ function logUploadSummary() {
   if (uploadedThumbnailCount > 0) {
     console.log(`Uploaded ${uploadedThumbnailCount} optimized thumbnail variant${uploadedThumbnailCount === 1 ? '' : 's'} to R2.`)
   }
+  if (sourceReplacements.length > 0) {
+    console.log(`Updated ${sourceReplacements.length} food photo source${sourceReplacements.length === 1 ? '' : 's'} to use R2.`)
+  }
 }
 
-if (missingImages.length === 0) {
+if (missingImages.length === 0 && sourceReplacements.length === 0) {
   logUploadSummary()
   console.log('Food photo data is already synchronized.')
   process.exit(0)
 }
 
-const openingMarkerMatch = fileContents.match(arrayOpeningPattern)
+let updatedContents = sourceReplacements.reduce(
+  (contents, { source, replacement }) => replaceSource(contents, source, replacement),
+  fileContents,
+)
 
-if (!openingMarkerMatch) {
-  throw new Error(`Could not find the food photo array opening marker in ${foodDataFile}.`)
+if (missingImages.length > 0) {
+  const openingMarkerMatch = updatedContents.match(arrayOpeningPattern)
+
+  if (!openingMarkerMatch) {
+    throw new Error(`Could not find the food photo array opening marker in ${foodDataFile}.`)
+  }
+
+  const openingMarkerIndex = openingMarkerMatch.index
+  const lineEnding = openingMarkerMatch[0].endsWith('\r\n') ? '\r\n' : '\n'
+  const newEntries = missingImages.map(({ source }) => [
+    '  {',
+    `    src: ${JSON.stringify(source)},`,
+    "    date: '',",
+    "    caption: '',",
+    "    restaurant: '',",
+    "    location: '',",
+    '  },',
+  ].join(lineEnding)).join(lineEnding)
+
+  const insertionIndex = openingMarkerIndex + openingMarkerMatch[0].length
+  updatedContents = [
+    updatedContents.slice(0, insertionIndex),
+    `${newEntries}${lineEnding}`,
+    updatedContents.slice(insertionIndex),
+  ].join('')
 }
-
-const openingMarkerIndex = openingMarkerMatch.index
-const lineEnding = openingMarkerMatch[0].endsWith('\r\n') ? '\r\n' : '\n'
-const newEntries = missingImages.map(({ source }) => [
-  '  {',
-  `    src: ${JSON.stringify(source)},`,
-  "    date: '',",
-  "    caption: '',",
-  "    restaurant: '',",
-  "    location: '',",
-  '  },',
-].join(lineEnding)).join(lineEnding)
-
-const insertionIndex = openingMarkerIndex + openingMarkerMatch[0].length
-const updatedContents = [
-  fileContents.slice(0, insertionIndex),
-  `${newEntries}${lineEnding}`,
-  fileContents.slice(insertionIndex),
-].join('')
 
 await writeFile(foodDataFile, updatedContents, 'utf8')
 logUploadSummary()
-console.log(`Added ${missingImages.length} new food photo entr${missingImages.length === 1 ? 'y' : 'ies'}.`)
+if (missingImages.length > 0) {
+  console.log(`Added ${missingImages.length} new food photo entr${missingImages.length === 1 ? 'y' : 'ies'}.`)
+}

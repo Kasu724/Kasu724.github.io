@@ -17,6 +17,12 @@ type GitHubContributionsResponse = {
 const githubUser = 'Kasu724'
 const contributionsEndpoint = `https://github-contributions-api.jogruber.de/v4/${githubUser}?y=last`
 const contributionsCacheKey = 'kasu724-github-contributions'
+const contributionsCacheLifetime = 60 * 60 * 1000
+
+type GitHubContributionsCache = {
+  cachedAt: number
+  data: GitHubContributions
+}
 
 let contributionsRequest: Promise<GitHubContributions> | null = null
 
@@ -46,8 +52,10 @@ function readCache() {
     const cached = window.localStorage.getItem(contributionsCacheKey)
     if (!cached) return null
 
-    const data = JSON.parse(cached) as unknown
-    return isGitHubContributions(data) ? data : null
+    const cache = JSON.parse(cached) as Partial<GitHubContributionsCache>
+    return typeof cache.cachedAt === 'number' && isGitHubContributions(cache.data)
+      ? cache as GitHubContributionsCache
+      : null
   } catch {
     return null
   }
@@ -55,7 +63,10 @@ function readCache() {
 
 function writeCache(data: GitHubContributions) {
   try {
-    window.localStorage.setItem(contributionsCacheKey, JSON.stringify(data))
+    window.localStorage.setItem(contributionsCacheKey, JSON.stringify({
+      cachedAt: Date.now(),
+      data,
+    }))
   } catch {
     // The calendar can still use the live response when storage is unavailable.
   }
@@ -84,7 +95,7 @@ function normalizeResponse(response: GitHubContributionsResponse): GitHubContrib
 }
 
 export function getCachedGitHubContributions() {
-  return readCache()
+  return readCache()?.data ?? null
 }
 
 async function fetchGitHubContributions() {
@@ -104,6 +115,11 @@ async function fetchGitHubContributions() {
 }
 
 export function loadGitHubContributions() {
+  const cache = readCache()
+  if (cache && Date.now() - cache.cachedAt < contributionsCacheLifetime) {
+    return Promise.resolve(cache.data)
+  }
+
   if (!contributionsRequest) {
     contributionsRequest = fetchGitHubContributions()
       .finally(() => {

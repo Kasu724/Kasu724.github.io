@@ -38,6 +38,9 @@ type RecentCommitsCache = {
 const githubUser = 'Kasu724'
 const siteRepository = `${githubUser}/${githubUser}.github.io`
 const recentCommitsCacheKey = 'kasu724-recent-github-commits'
+const githubRetryAfterKey = 'kasu724-github-api-retry-after'
+const recentCommitsCacheLifetime = 60 * 60 * 1000
+const githubFailureCooldown = 15 * 60 * 1000
 const recentCommitsEndpoint = `https://api.github.com/search/commits?${new URLSearchParams({
   q: `author:${githubUser}`,
   sort: 'committer-date',
@@ -92,6 +95,33 @@ function writeCache(commits: RecentCommit[]) {
   }
 }
 
+function readGitHubRetryAfter() {
+  try {
+    const retryAfter = Number.parseInt(
+      window.localStorage.getItem(githubRetryAfterKey) ?? '0',
+      10,
+    )
+    return Number.isFinite(retryAfter) ? retryAfter : 0
+  } catch {
+    return 0
+  }
+}
+
+function writeGitHubRetryAfter(retryAfter: number) {
+  try {
+    window.localStorage.setItem(githubRetryAfterKey, String(retryAfter))
+  } catch {
+    // The in-memory request guard still prevents duplicate concurrent calls.
+  }
+}
+
+function getRateLimitReset(response: Response) {
+  const resetAt = Number.parseInt(response.headers.get('X-RateLimit-Reset') ?? '', 10) * 1000
+  return Number.isFinite(resetAt) && resetAt > Date.now()
+    ? resetAt
+    : Date.now() + githubFailureCooldown
+}
+
 export function getCachedRecentCommits() {
   return readCache()?.commits ?? []
 }
@@ -133,6 +163,10 @@ function reuseCachedStats(
 }
 
 function githubRequest<T>(url: string, signal: AbortSignal) {
+  if (readGitHubRetryAfter() > Date.now()) {
+    return Promise.reject(new Error('GitHub requests are cooling down'))
+  }
+
   return fetch(url, {
     cache: 'no-store',
     headers: {
@@ -142,6 +176,9 @@ function githubRequest<T>(url: string, signal: AbortSignal) {
     signal,
   }).then(async (response) => {
     if (!response.ok) {
+      if (response.status === 403 || response.status === 429) {
+        writeGitHubRetryAfter(getRateLimitReset(response))
+      }
       throw new Error(`GitHub returned ${response.status}`)
     }
 
@@ -252,6 +289,17 @@ async function fetchRecentCommits() {
 }
 
 export function loadRecentCommits() {
+  const cache = readCache()
+  if (cache && Date.now() - cache.cachedAt < recentCommitsCacheLifetime) {
+    return Promise.resolve(cache.commits)
+  }
+
+  if (readGitHubRetryAfter() > Date.now()) {
+    return cache?.commits.length
+      ? Promise.resolve(cache.commits)
+      : Promise.reject(new Error('GitHub requests are cooling down'))
+  }
+
   if (!recentCommitsRequest) {
     recentCommitsRequest = fetchRecentCommits()
       .finally(() => {

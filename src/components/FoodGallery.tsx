@@ -6,6 +6,21 @@ const thumbnailWidths = [400, 800] as const
 const initialVisiblePhotoCount = 24
 const photoBatchSize = 24
 
+function applyImageFallback(image: HTMLImageElement, fallbackSource: string) {
+  const fallbackUrl = new URL(fallbackSource, document.baseURI).href
+
+  // The DOM resolves `image.src` to an absolute URL, even when React received a
+  // relative URL. Comparing the raw prop to `image.src` can therefore retry the
+  // same broken image forever.
+  if (image.src === fallbackUrl) {
+    image.onerror = null
+    return
+  }
+
+  image.srcset = ''
+  image.src = fallbackSource
+}
+
 function getFoodThumbnailSource(source: string, width: typeof thumbnailWidths[number]) {
   const originalsMarker = '/originals/'
   const markerIndex = source.indexOf(originalsMarker)
@@ -89,9 +104,7 @@ function FoodPhotoCard({ photo, priority = false, onOpen }: FoodPhotoCardProps) 
           fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"
           onError={(event) => {
-            if (event.currentTarget.src === photo.src) return
-            event.currentTarget.srcset = ''
-            event.currentTarget.src = photo.src
+            applyImageFallback(event.currentTarget, photo.src)
           }}
         />
       </span>
@@ -178,8 +191,7 @@ function FoodPhotoDialog({ photo, isClosing, onClose, onExitComplete }: FoodPhot
             src={photo.src}
             alt={imageAlt}
             onError={(event) => {
-              if (event.currentTarget.src === thumbnailSource) return
-              event.currentTarget.src = thumbnailSource
+              applyImageFallback(event.currentTarget, thumbnailSource)
             }}
           />
         </div>

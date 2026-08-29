@@ -107,6 +107,8 @@ To update the portfolio, edit the relevant data module or component, then run `n
 
 The sync script uploads originals to Cloudflare R2, generates 400px and 800px WebP thumbnails, and skips objects that already exist. Gallery cards load responsive thumbnails; opening a card loads the full original.
 
+R2 credentials live only in the ignored `.env.local` file, so they do not follow a clone to another computer. Before adding photos on a new computer, copy `.env.example` to `.env.local` and restore all five `R2_*` values from secure storage. Do not commit `.env.local`. The sync command now stops instead of creating undeployable local image references when those credentials are unavailable.
+
 ## Deployment
 
 Pushes to `main` trigger `.github/workflows/deploy.yml`, which:
@@ -116,4 +118,4 @@ Pushes to `main` trigger `.github/workflows/deploy.yml`, which:
 3. Uploads `dist/` as a GitHub Pages artifact
 4. Deploys the artifact to GitHub Pages
 
-The repository’s GitHub Pages environment must be configured to use GitHub Actions. If the food gallery is included in a deployment, the required R2 configuration must also be available to the build environment.
+The repository’s GitHub Pages environment must be configured to use GitHub Actions. R2 credentials are needed only on the computer that adds food photos; deployment uses the public R2 URLs written into `src/data/foodPhotos.ts`.
