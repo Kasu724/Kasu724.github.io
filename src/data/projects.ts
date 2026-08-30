@@ -51,8 +51,8 @@ export const projects: Project[] = [
     title: 'Dotfiles (Xubuntu)',
     description: 'My dotfiles for my Xubuntu rice, using bspwm, Polybar, Rofi, and other tools',
     highlights: [
-      'Automated reproducible **Linux developer-environment** provisioning with **Bash**, handling **dependency installation**, symlink-based configuration management, file backups, architecture-aware setup, dry-run execution, and post-install validation',
-      'Built a centralized **Python** configuration-generation pipeline using **OKLab** color interpolation, input validation, and automated file generation to synchronize **Polybar** and **Rofi** themes across the desktop environment.'
+      'Automated a reproducible **Linux rice** with **Bash**, handling **dependency installation**, symlink-based configuration management, file backups, architecture-aware setup, and post-install validation',
+      'Built a **Python** configuration-generation pipeline using **OKLab** color interpolation and automated file generation to synchronize **Polybar** and **Rofi** themes'
     ],
     technologies: ['Linux/Xubuntu', 'Bash', 'Python', 'bspwm', 'Polybar', 'Rofi'],
     liveUrl: '',
@@ -71,10 +71,10 @@ export const projects: Project[] = [
   },
   {
     title: 'Godot 2D Character Controller',
-    description: 'An open-source 2D character controller Godot, built with GDScript and designed for platformer games',
+    description: 'An open-source 2D character controller for Godot, built with GDScript and designed for platformer games',
     highlights: [
-      'Developed a reusable, **OOP**-based 2D character-controller framework in **GDScript** with configurable movement, collision handling, animation, and physics behavior',
-      'Architected movement using a **modular finite-state machine**, separating grounded, airborne, dash, wall-slide, and wall-jump logic for maintainability and extensibility'
+      'Developed an **OOP**-based 2D character-controller in **GDScript** with configurable movement, collision handling, animation, and physics behavior',
+      'Architected movement using a **modular finite-state machine**, separating grounded, airborne, dash, wall-slide, and wall-jump logic'
     ],
     technologies: ['Godot 4', 'GDScript', 'Finite-State Machines', 'Object-Oriented Programming'],
     liveUrl: 'https://kasu724.itch.io/godot-2d-character-controller',
@@ -84,8 +84,8 @@ export const projects: Project[] = [
     title: '\"A Platformer...?\" Game Jam',
     description: 'My submission for the Brackeys Game Jam 2025.1, a short 2D platformer game built in Godot',
     highlights: [
-      'Engineered and shipped a modular **Godot/GDScript** game with **OOP** and reusable systems for player movement, dialogue, checkpoints, scene transitions, and interactive objects',
-      'Implemented collision-aware object interactions using **RayCast2D**, **ShapeCast2D**, and **runtime scene instantiation**, managing dynamic **physics state** and **object lifecycles**'
+      'Engineered and shipped a modular **Godot** game with **OOP** and reusable systems for player movement, dialogue, checkpoints, scene transitions, and physics objects',
+      'Implemented collision-aware object interactions using **RayCast2D**, **ShapeCast2D**, and **runtime scene instantiation**, managing dynamic **physics states** and **object lifecycles**'
     ],
     technologies: ['Godot 4', 'GDScript', 'Finite-State Machines', 'Object-Oriented Programming', 'Dialogic'],
     liveUrl: 'https://kasu724.itch.io/godot-2d-character-controller',
