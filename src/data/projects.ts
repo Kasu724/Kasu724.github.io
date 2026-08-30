@@ -49,13 +49,12 @@ export const projects: Project[] = [
   },
   {
     title: 'Dotfiles (Xubuntu)',
-    description: 'An open-source Chrome extension for various image downloading and manipulation tools',
+    description: 'My dotfiles for my Xubuntu rice, using bspwm, Polybar, Rofi, and other tools',
     highlights: [
       'Automated reproducible **Linux developer-environment** provisioning with **Bash**, handling **dependency installation**, symlink-based configuration management, file backups, architecture-aware setup, dry-run execution, and post-install validation',
       'Built a centralized **Python** configuration-generation pipeline using **OKLab** color interpolation, input validation, and automated file generation to synchronize **Polybar** and **Rofi** themes across the desktop environment.'
-    
     ],
-    technologies: ['TypeScript', 'React', 'Chrome Extension APIs/Manifest V3', 'Canvas/OffscreenCanvas', 'FastAPI', 'SQLAlchemy'],
+    technologies: ['Linux/Xubuntu', 'Bash', 'Python', 'bspwm', 'Polybar', 'Rofi'],
     liveUrl: '',
     sourceUrl: 'https://github.com/Kasu724/imagelab-extension',
   },
