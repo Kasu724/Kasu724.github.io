@@ -7,7 +7,7 @@ It contains my experience, skills, education, projects, and some food photograph
 ## Features
 
 - Responsive pages with sections for an intro, skills, experience, projects, education, and additional information
-- Additional `/about/`, `/projects/`, and `/food/` pages
+- Additional `/about/`, `/projects/`, `/resume/`, and `/food/` pages
 - Client-side page transitions with browser history support and reduced-motion handling
 - Project and profile content stored in typed data modules under `src/data/`
 - Location map powered by Leaflet
@@ -66,11 +66,12 @@ npm run build
 npm run preview
 ```
 
-The production build is written to `dist/` and includes the four HTML entry points:
+The production build is written to `dist/` and includes the five HTML entry points:
 
 - `/`
 - `/about/`
 - `/projects/`
+- `/resume/`
 - `/food/`
 
 ## Available scripts
@@ -92,11 +93,14 @@ Most portfolio content is kept separate from layout code:
 - `src/data/foodPhotos.ts` — food-gallery metadata
 - `src/data/githubContributions.ts` and `src/data/githubCommits.ts` — GitHub activity data
 - `src/data/socialLinks.ts` — contact and social links
+- `src/data/resume.ts` — public path for the resume PDF
 - `src/components/` — reusable sections and UI components
 - `src/pages/` — dedicated page compositions
 - `src/styles/` — base, theme, layout, and component styles
 
 To update the portfolio, edit the relevant data module or component, then run `npm run lint` and `npm run build`.
+
+To publish a resume, add it at `public/data/resume.pdf`. The `/resume/` page will automatically detect and display it, with open and download actions.
 
 ## Food photo workflow
 

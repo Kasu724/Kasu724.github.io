@@ -48,6 +48,18 @@ export const projects: Project[] = [
     sourceUrl: 'https://github.com/Kasu724/imagelab-extension',
   },
   {
+    title: 'Dotfiles (Xubuntu)',
+    description: 'An open-source Chrome extension for various image downloading and manipulation tools',
+    highlights: [
+      'Automated reproducible **Linux developer-environment** provisioning with **Bash**, handling **dependency installation**, symlink-based configuration management, file backups, architecture-aware setup, dry-run execution, and post-install validation',
+      'Built a centralized **Python** configuration-generation pipeline using **OKLab** color interpolation, input validation, and automated file generation to synchronize **Polybar** and **Rofi** themes across the desktop environment.'
+    
+    ],
+    technologies: ['TypeScript', 'React', 'Chrome Extension APIs/Manifest V3', 'Canvas/OffscreenCanvas', 'FastAPI', 'SQLAlchemy'],
+    liveUrl: '',
+    sourceUrl: 'https://github.com/Kasu724/imagelab-extension',
+  },
+  {
     title: 'Sign Language Translator',
     description: 'A tool that translates sign language into text and speech and vice versa, using CV and ML',
     highlights: [

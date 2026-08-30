@@ -25,6 +25,10 @@ function AboutSection() {
             <strong> quantitative finance</strong>, and I enjoy turning technical challenges into
             reliable, impactful products.
             </span>
+            <span className="about-section__sentence">
+              Also, take a look at my{' '}
+              <a className="about-page__inline-link" href="/resume/">resume</a>.
+            </span>
           </p>
 
           <div className="about-section__links" aria-label="Social links">

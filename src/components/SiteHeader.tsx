@@ -10,6 +10,7 @@ const pageDetails: Record<Page, { label: string; href: string; path: string }> =
   home: { label: 'Home', href: '/', path: '$HOME/' },
   about: { label: 'About', href: '/about/', path: '$HOME/about/' },
   projects: { label: 'Projects', href: '/projects/', path: '$HOME/projects/' },
+  resume: { label: 'Resume', href: '/resume/', path: '$HOME/resume/' },
   food: { label: 'Food', href: '/food/', path: '$HOME/food/' },
 }
 

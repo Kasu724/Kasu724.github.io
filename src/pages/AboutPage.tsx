@@ -264,6 +264,10 @@ function AboutPage() {
                 <a className="about-page__inline-link" href={socialLinks.email}>email</a> or
                 message if you'd like to chat!
               </span>
+              <span className="about-page__sentence">
+                Also, take a look at my{' '}
+                <a className="about-page__inline-link" href="/resume/">resume</a>.
+              </span>
             </p>
 
             <div className="about-page__links" aria-label="Contact links">

@@ -12,13 +12,15 @@ import { ServiceStatusProvider } from './components/ServiceStatusContext'
 import AboutPage from './pages/AboutPage'
 import FoodPage from './pages/FoodPage'
 import ProjectsPage from './pages/ProjectsPage'
+import ResumePage from './pages/ResumePage'
 
-export type Page = 'home' | 'about' | 'projects' | 'food'
+export type Page = 'home' | 'about' | 'projects' | 'resume' | 'food'
 
 const pageTitles: Record<Page, string> = {
   home: 'Kevin Lui | Home',
   about: 'Kevin Lui | About',
   projects: 'Kevin Lui | Projects',
+  resume: 'Kevin Lui | Resume',
   food: 'Kevin Lui | Food',
 }
 
@@ -27,6 +29,7 @@ function getPageFromPath(pathname: string): Page | null {
 
   if (path.endsWith('/about')) return 'about'
   if (path.endsWith('/projects')) return 'projects'
+  if (path.endsWith('/resume')) return 'resume'
   if (path.endsWith('/food')) return 'food'
   if (path === '') return 'home'
 
@@ -125,6 +128,7 @@ function App() {
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'about' && <AboutPage />}
           {currentPage === 'projects' && <ProjectsPage />}
+          {currentPage === 'resume' && <ResumePage />}
           {currentPage === 'food' && <FoodPage />}
         </div>
         <SiteFooter />
