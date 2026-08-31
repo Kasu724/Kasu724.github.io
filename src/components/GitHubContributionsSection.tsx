@@ -319,7 +319,7 @@ function GitHubContributionsCard() {
   useEffect(() => {
     let active = true
 
-    void loadGitHubContributions()
+    void loadGitHubContributions({ forceRefresh: true })
       .then((contributions) => {
         if (!active) return
 

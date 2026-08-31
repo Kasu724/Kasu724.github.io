@@ -288,9 +288,9 @@ async function fetchRecentCommits() {
   return commitsWithStats
 }
 
-export function loadRecentCommits() {
+export function loadRecentCommits({ forceRefresh = false }: { forceRefresh?: boolean } = {}) {
   const cache = readCache()
-  if (cache && Date.now() - cache.cachedAt < recentCommitsCacheLifetime) {
+  if (!forceRefresh && cache && Date.now() - cache.cachedAt < recentCommitsCacheLifetime) {
     return Promise.resolve(cache.commits)
   }
 

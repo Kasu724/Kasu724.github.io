@@ -12,7 +12,7 @@ export function ServiceStatusProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true
 
-    void loadRecentCommits()
+    void loadRecentCommits({ forceRefresh: true })
       .then((commits) => {
         if (active) setServiceHealth('recentCommits', commits.length > 0)
       })

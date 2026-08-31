@@ -114,9 +114,9 @@ async function fetchGitHubContributions() {
   return data
 }
 
-export function loadGitHubContributions() {
+export function loadGitHubContributions({ forceRefresh = false }: { forceRefresh?: boolean } = {}) {
   const cache = readCache()
-  if (cache && Date.now() - cache.cachedAt < contributionsCacheLifetime) {
+  if (!forceRefresh && cache && Date.now() - cache.cachedAt < contributionsCacheLifetime) {
     return Promise.resolve(cache.data)
   }
 

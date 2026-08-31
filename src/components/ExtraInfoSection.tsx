@@ -34,7 +34,7 @@ function ExtraInfoSection() {
   useEffect(() => {
     let active = true
 
-    void loadRecentCommits()
+    void loadRecentCommits({ forceRefresh: true })
       .then((commits) => {
         if (!active) return
 
