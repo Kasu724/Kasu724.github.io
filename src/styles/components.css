@@ -700,14 +700,27 @@
   background: transparent;
 }
 
+#top {
+  transition: filter 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#top.project-dialog-page--blurred {
+  filter: blur(0.5rem);
+}
+
+#top.project-dialog-page--blurred.project-dialog-page--closing {
+  filter: blur(0);
+}
+
 .project-dialog-backdrop::before {
   position: absolute;
   z-index: 0;
   inset: 0;
   background: color-mix(in srgb, var(--color-page) 72%, transparent);
   content: '';
+  opacity: 0;
   pointer-events: none;
-  animation: project-backdrop-blur-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: project-backdrop-tint-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .project-dialog-backdrop[data-closing="true"] {
@@ -715,30 +728,26 @@
 }
 
 .project-dialog-backdrop[data-closing="true"]::before {
-  animation-name: project-backdrop-blur-out;
+  animation-name: project-backdrop-tint-out;
 }
 
-@keyframes project-backdrop-blur-in {
+@keyframes project-backdrop-tint-in {
   from {
-    -webkit-backdrop-filter: blur(0);
-    backdrop-filter: blur(0);
+    opacity: 0;
   }
 
   to {
-    -webkit-backdrop-filter: blur(0.5rem);
-    backdrop-filter: blur(0.5rem);
+    opacity: 1;
   }
 }
 
-@keyframes project-backdrop-blur-out {
+@keyframes project-backdrop-tint-out {
   from {
-    -webkit-backdrop-filter: blur(0.5rem);
-    backdrop-filter: blur(0.5rem);
+    opacity: 1;
   }
 
   to {
-    -webkit-backdrop-filter: blur(0);
-    backdrop-filter: blur(0);
+    opacity: 0;
   }
 }
 
@@ -922,7 +931,7 @@
 
 .project-dialog .project-dialog__content--compact h3 {
   margin-bottom: var(--space-3);
-  color: var(--color-text);
+  color: var(--color-accent);
   font-size: var(--text-body);
 }
 
@@ -1215,7 +1224,7 @@
   text-decoration-line: underline;
   text-decoration-style: dashed;
   text-decoration-color: currentColor;
-  text-decoration-thickness: auto;
+  text-decoration-thickness: 0.1em;
   text-underline-offset: 4px;
   transition:
     background-color 200ms,

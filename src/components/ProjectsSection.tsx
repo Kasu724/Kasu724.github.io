@@ -1,4 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { featuredProjects } from '../data/projects'
 import type { Project } from '../types/project'
 import ProjectCard, { ProjectCardContent, ProjectLinks } from './ProjectCard'
@@ -188,7 +189,7 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
 
   const highlights = project.highlights?.length ? project.highlights : [project.description]
 
-  return (
+  return createPortal(
     <div
       className="project-dialog-backdrop"
       data-closing={isClosing || undefined}
@@ -257,7 +258,8 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
         </div>
         <ProjectLinks project={project} className="project-dialog__links" />
       </section>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
