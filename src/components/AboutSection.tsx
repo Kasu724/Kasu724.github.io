@@ -24,10 +24,9 @@ function AboutSection() {
             My experience spans <strong>full-stack engineering</strong>, <strong>AI/ML</strong>, <strong>data engineering</strong>, and
             <strong> quantitative finance</strong>, and I enjoy turning technical challenges into
             reliable, impactful products.
-            </span>
-            <span className="about-section__sentence">
-              Also, take a look at my{' '}
-              <a className="about-page__inline-link" href="/resume/">resume</a>.
+              If you want to see more, take a look at my{' '}
+              <a className="about-page__inline-link" href="/resume/">resume</a> or continue
+              exploring my site!
             </span>
           </p>
 

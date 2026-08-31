@@ -56,7 +56,7 @@ export const projects: Project[] = [
     ],
     technologies: ['Linux/Xubuntu', 'Bash', 'Python', 'bspwm', 'Polybar', 'Rofi'],
     liveUrl: '',
-    sourceUrl: 'https://github.com/Kasu724/imagelab-extension',
+    sourceUrl: 'https://github.com/Kasu724/dotfiles',
   },
   {
     title: 'Sign Language Translator',
