@@ -33,7 +33,7 @@ export const projects: Project[] = [
     ],
     technologies: ['Next.js', 'TypeScript', 'PostgreSQL', 'Prisma', 'REST APIs', 'Docker'],
     liveUrl: '',
-    sourceUrl: 'https://github.com/Kasu724/faang-quant-tracker',
+    sourceUrl: 'https://github.com/Kasu724/swe-quant-tracker',
   },
   {
     title: 'ImageLab Chrome Extension',
