@@ -21,9 +21,10 @@
   --ctp-base: #1e1e2e;
   --ctp-mantle: #181825;
   --ctp-crust: #11111b;
-  --map-tile-invert: 0;
-  --map-tile-brightness: 1.6;
+  --map-tile-invert: 0.0;
+  --map-tile-brightness: 0.6;
   --map-tile-contrast: 1.0;
+  --map-label-brightness: 1.0;
 }
 
 :root[data-theme="latte"] {
@@ -49,8 +50,9 @@
   --ctp-mantle: #e6e9ef;
   --ctp-crust: #dce0e8;
   --map-tile-invert: 1.0;
-  --map-tile-brightness: 1.0;
-  --map-tile-contrast: 0.9;
+  --map-tile-brightness: 1.2;
+  --map-tile-contrast: 0.7;
+  --map-label-brightness: 0.9;
 }
 
 :root[data-theme="frappe"] {
@@ -75,9 +77,10 @@
   --ctp-base: #303446;
   --ctp-mantle: #292c3c;
   --ctp-crust: #232634;
-  --map-tile-invert: 0;
-  --map-tile-brightness: 2.2;
-  --map-tile-contrast: 0.7;
+  --map-tile-invert: 0.0;
+  --map-tile-brightness: 0.5;
+  --map-tile-contrast: 0.6;
+  --map-label-brightness: 1.3;
 }
 
 :root[data-theme="macchiato"] {
@@ -102,9 +105,10 @@
   --ctp-base: #24273a;
   --ctp-mantle: #1e2030;
   --ctp-crust: #181926;
-  --map-tile-invert: 0;
-  --map-tile-brightness: 1.8;
+  --map-tile-invert: 0.0;
+  --map-tile-brightness: 0.6;
   --map-tile-contrast: 0.8;
+  --map-label-brightness: 1.2;
 }
 
 :root {

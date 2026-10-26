@@ -2500,6 +2500,7 @@
 .contact-card__map-loading {
   position: absolute;
   inset: 0;
+  z-index: 1000;
   display: grid;
   place-items: center;
   background: var(--color-surface-elevated);
@@ -2508,26 +2509,26 @@
   pointer-events: none;
 }
 
-.contact-card__map :is(.leaflet-container, .leaflet-tile-container, .leaflet-pane) {
+.contact-card__map .leaflet-container {
   background: var(--color-surface-elevated);
 }
 
-.contact-card__map .leaflet-tile {
+.contact-card__map-base .leaflet-tile {
   filter: grayscale(1) invert(var(--map-tile-invert)) brightness(var(--map-tile-brightness)) contrast(var(--map-tile-contrast));
+}
+
+.contact-card__map-labels .leaflet-tile {
+  filter: invert(var(--map-tile-invert)) brightness(var(--map-label-brightness));
+}
+
+.contact-card__map .leaflet-labels-pane {
+  z-index: 450;
+  pointer-events: none;
 }
 
 .contact-card__map .leaflet-container img.leaflet-tile {
   /* Leaflet's plus-lighter workaround produces color blocks on dark cards. */
   mix-blend-mode: normal;
-}
-
-.contact-card__map .leaflet-attribution-flag {
-  display: inline !important;
-  width: 1em;
-  height: 0.6669em;
-  fill: currentColor;
-  stroke: none;
-  vertical-align: baseline !important;
 }
 
 .contact-card__location-details {

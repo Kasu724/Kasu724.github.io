@@ -4,7 +4,8 @@ import { MapPinIcon } from './ServiceIcons'
 import { useServiceStatus } from './useServiceStatus'
 
 const hobokenCoordinates: [number, number] = [40.74325, -74.0324]
-const mapZoom = 15
+// Show the city and waterfront; CARTO switches to neighborhood labels at z14.
+const mapZoom = 13
 
 function SunIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" /></svg>
@@ -28,11 +29,12 @@ function LocationMap() {
   const { setServiceHealth } = useServiceStatus()
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<LeafletMap | null>(null)
-  const [mapLoaded, setMapLoaded] = useState(false)
+  const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [currentTime, setCurrentTime] = useState(getHobokenTime)
 
   useEffect(() => {
     let destroyed = false
+    let resizeObserver: ResizeObserver | undefined
     const interval = window.setInterval(() => setCurrentTime(getHobokenTime()), 1000)
 
     async function initializeMap() {
@@ -41,8 +43,16 @@ function LocationMap() {
 
       if (destroyed || !mapContainerRef.current) return
 
+      const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY?.trim()
+
+      if (!cartoApiKey) {
+        throw new Error('VITE_CARTO_API_KEY is not configured')
+      }
+
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
+        zoomSnap: 0.1,
+        zoomDelta: 0.1,
         attributionControl: false,
         dragging: true,
         scrollWheelZoom: true,
@@ -51,40 +61,72 @@ function LocationMap() {
         keyboard: true,
         touchZoom: true,
       }).setView(hobokenCoordinates, mapZoom)
+      mapInstanceRef.current = map
 
-      const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY?.trim()
+      map.createPane('labels')
 
-      if (!cartoApiKey) {
-        throw new Error('VITE_CARTO_API_KEY is not configured')
-      }
-
-      const tileLayer = L.tileLayer(
-        `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=${encodeURIComponent(cartoApiKey)}`,
+      // Keep labels separate so theme filters cannot wash out their contrast.
+      // CARTO's @2x variant adds resolution without changing the 256px tile grid.
+      const tileLayers = [
+        ['dark_nolabels', 'tilePane', 'contact-card__map-base'],
+        ['dark_only_labels', 'labels', 'contact-card__map-labels'],
+      ].map(([style, pane, className]) => L.tileLayer(
+        `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoApiKey)}`,
         {
+          pane,
+          className,
           maxZoom: 19,
           detectRetina: false,
-          attribution: '',
+          attribution: pane === 'tilePane'
+            ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            : '',
           subdomains: 'abcd',
           keepBuffer: 4,
           updateWhenIdle: false,
           updateWhenZooming: false,
         },
-      )
-      tileLayer.on('tileerror', () => setServiceHealth('location', false))
-      tileLayer.addTo(map)
+      ))
+      const pendingLayers = new Set(tileLayers)
+      const failedLayers = new Set<(typeof tileLayers)[number]>()
 
-      mapInstanceRef.current = map
-      setMapLoaded(true)
-      setServiceHealth('location', true)
+      for (const layer of tileLayers) {
+        layer.on('loading', () => {
+          pendingLayers.add(layer)
+          failedLayers.delete(layer)
+        })
+        layer.on('tileerror', () => {
+          failedLayers.add(layer)
+          setMapStatus('error')
+          setServiceHealth('location', false)
+        })
+        layer.on('load', () => {
+          pendingLayers.delete(layer)
+          if (pendingLayers.size > 0) return
+
+          const healthy = failedLayers.size === 0
+          setMapStatus(healthy ? 'ready' : 'error')
+          setServiceHealth('location', healthy)
+        })
+        layer.addTo(map)
+      }
+
+      // Grid content and fonts can resize the card without a window resize.
+      resizeObserver = new ResizeObserver(() => {
+        map.invalidateSize({ animate: false, debounceMoveend: true })
+      })
+      resizeObserver.observe(mapContainerRef.current)
     }
 
     void initializeMap().catch(() => {
+      if (destroyed) return
+      setMapStatus('error')
       setServiceHealth('location', false)
     })
 
     return () => {
       destroyed = true
       window.clearInterval(interval)
+      resizeObserver?.disconnect()
       mapInstanceRef.current?.remove()
       mapInstanceRef.current = null
     }
@@ -94,6 +136,7 @@ function LocationMap() {
   const isDaytime = hour >= 6 && hour < 21
 
   function recenterMap() {
+    mapInstanceRef.current?.invalidateSize({ animate: false })
     mapInstanceRef.current?.setView(hobokenCoordinates, mapZoom)
   }
 
@@ -111,7 +154,11 @@ function LocationMap() {
           ref={mapContainerRef}
           role="region"
         />
-        {!mapLoaded && <div className="contact-card__map-loading">Loading map…</div>}
+        {mapStatus !== 'ready' && (
+          <div className="contact-card__map-loading" role="status">
+            {mapStatus === 'error' ? 'Map temporarily unavailable.' : 'Loading map…'}
+          </div>
+        )}
       </div>
 
       <div className="contact-card__location-details">
