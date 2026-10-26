@@ -58,7 +58,14 @@ function buildCalendar(contributions: GitHubContributionDay[]) {
     })
   })
 
-  return { weeks, months }
+  // Three-letter labels need two week columns. Short edge months can share a
+  // column with the next month, so omit their labels without dropping any days.
+  const visibleMonths = months.filter((month, index) => {
+    const endWeek = months[index + 1]?.week ?? weeks.length + 1
+    return endWeek - month.week >= 2
+  })
+
+  return { weeks, months: visibleMonths }
 }
 
 function contributionLabel(day: GitHubContributionDay) {
@@ -213,7 +220,7 @@ function ContributionCalendar({ data }: { data: GitHubContributions }) {
           <div className="contribution-calendar__canvas" style={calendarStyle}>
             <div className="contribution-calendar__months" aria-hidden="true">
               {months.map((month) => (
-                <span style={{ gridColumn: month.week }} key={`${month.label}-${month.week}`}>
+                <span style={{ gridColumn: `${month.week} / span 2` }} key={`${month.label}-${month.week}`}>
                   {month.label}
                 </span>
               ))}

@@ -2068,6 +2068,7 @@
 }
 
 .contribution-calendar__months span {
+  grid-row: 1;
   line-height: 1;
 }
 
