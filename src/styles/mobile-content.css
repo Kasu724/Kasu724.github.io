@@ -1,0 +1,170 @@
+/* About section: preserve the reading order while placing the portrait between
+   the title and biography on narrow screens. */
+@media (max-width: 47.99rem) {
+  .about-section__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "title"
+      "portrait"
+      "biography"
+      "links";
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .about-section__content {
+    display: contents;
+  }
+
+  .about-section__title {
+    grid-area: title;
+  }
+
+  .about-section__content > .about-section__title {
+    margin-bottom: 0;
+  }
+
+  .about-section__image {
+    grid-area: portrait;
+    width: min(16rem, 72vw);
+    justify-self: center;
+  }
+
+  .about-section__content > p {
+    grid-area: biography;
+  }
+
+  .about-section__links {
+    grid-area: links;
+    margin-top: 0;
+  }
+
+  /* Keep category groups side by side while allowing long skill names to wrap
+     inside their cards at narrow phone widths. */
+  .skills-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-3);
+  }
+
+  .skills-grid {
+    gap: var(--space-2);
+  }
+
+  .skill-card {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .skill-card__icon-frame {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .skill-card__icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .skill-card__name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+  }
+}
+
+/* The desktop layout remains a title and copy column beside the single image. */
+@media (min-width: 48rem) {
+  .about-section__layout {
+    grid-template-rows: auto auto auto;
+    row-gap: 0;
+  }
+
+  .about-section__content {
+    display: contents;
+  }
+
+  .about-section__title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .about-section__content > p {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .about-section__links {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .about-section__image {
+    grid-column: 2;
+    grid-row: 1 / 4;
+  }
+}
+
+/* Commit rows need more room for the full message and a stable metadata line. */
+@media (max-width: 36rem) {
+  .commit-list {
+    gap: 0;
+  }
+
+  .commit-item {
+    min-height: 2.75rem;
+    padding: var(--space-3) var(--space-1);
+    border-bottom: var(--border-width) solid var(--color-border);
+  }
+
+  .commit-item:last-child {
+    border-bottom: 0;
+  }
+
+  .commit-item__summary {
+    display: grid;
+    gap: 0.15em;
+    overflow: visible;
+  }
+
+  .commit-item__repository {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .commit-item__message {
+    display: block;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .commit-item__meta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-1) var(--space-3);
+    align-items: baseline;
+    width: 100%;
+    white-space: nowrap;
+  }
+
+  .commit-item__meta > * {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .commit-item__meta .commit-item__sha {
+    grid-column: 1;
+  }
+
+  .commit-item__meta time {
+    grid-column: 2;
+  }
+
+  .commit-item__changes {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-left: 0;
+  }
+}

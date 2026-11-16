@@ -2,3 +2,6 @@
 @import "./styles/base.css";
 @import "./styles/layout.css";
 @import "./styles/components.css";
+@import "./styles/header.css";
+@import "./styles/mobile-content.css";
+@import "./styles/footer.css";

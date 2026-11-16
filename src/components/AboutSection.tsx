@@ -10,9 +10,11 @@ function AboutSection() {
     >
       <div className="about-section__layout">
         <div className="about-section__content">
-          <h2 id="about-title">
+          <h2 className="about-section__title" id="about-title">
             Hey! I'm <span className="about-section__name">Kevin Lui</span>
           </h2>
+
+          <ProfileImage className="about-section__image" />
 
           <p>
             <span className="about-section__sentence">
@@ -62,8 +64,6 @@ function AboutSection() {
             </a>
           </div>
         </div>
-
-        <ProfileImage className="about-section__image" />
       </div>
     </section>
   )

@@ -86,7 +86,12 @@ function updateFavicon(accent: AccentName) {
   favicon.href = `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
-function ThemeMenu() {
+type ThemeMenuProps = {
+  idPrefix: string
+  label?: string
+}
+
+function ThemeMenu({ idPrefix, label = 'Theme' }: ThemeMenuProps) {
   const themeMenuRef = useRef<HTMLDetailsElement>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
@@ -107,6 +112,29 @@ function ThemeMenu() {
     document.addEventListener('pointerdown', closeMenuOnOutsidePointer)
     return () => document.removeEventListener('pointerdown', closeMenuOnOutsidePointer)
   }, [isOpen])
+
+  useEffect(() => {
+    function syncTheme(event: Event) {
+      const detail = (event as CustomEvent<{ palette?: string; accent?: string }>).detail
+      const nextPalette = detail?.palette ?? null
+      const nextAccent = detail?.accent ?? null
+      if (isPaletteName(nextPalette)) setPalette(nextPalette)
+      if (isAccentName(nextAccent)) setAccent(nextAccent)
+    }
+
+    window.addEventListener('site-theme-change', syncTheme)
+    return () => window.removeEventListener('site-theme-change', syncTheme)
+  }, [])
+
+  function choosePalette(name: PaletteName) {
+    setPalette(name)
+    window.dispatchEvent(new CustomEvent('site-theme-change', { detail: { palette: name } }))
+  }
+
+  function chooseAccent(name: AccentName) {
+    setAccent(name)
+    window.dispatchEvent(new CustomEvent('site-theme-change', { detail: { accent: name } }))
+  }
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = palette
@@ -140,7 +168,7 @@ function ThemeMenu() {
           }
         }}
       >
-        Theme
+        {label}
       </summary>
 
       <div
@@ -160,7 +188,7 @@ function ThemeMenu() {
                 type="button"
                 aria-pressed={palette === name}
                 key={name}
-                onClick={() => setPalette(name)}
+                onClick={() => choosePalette(name)}
               >
                 {paletteLabels[name]}
               </button>
@@ -175,16 +203,16 @@ function ThemeMenu() {
               <button
                 type="button"
                 aria-label={`Select ${name} accent color`}
-                aria-describedby={`theme-accent-${name}-tooltip`}
+                aria-describedby={`theme-${idPrefix}-accent-${name}-tooltip`}
                 aria-pressed={accent === name}
                 className={accent === name ? 'is-selected' : undefined}
                 key={name}
-                onClick={() => setAccent(name)}
+                onClick={() => chooseAccent(name)}
                 style={{ backgroundColor: `var(--accent-${name})` }}
               >
                 <span
                   className="theme-menu__accent-tooltip"
-                  id={`theme-accent-${name}-tooltip`}
+                  id={`theme-${idPrefix}-accent-${name}-tooltip`}
                   role="tooltip"
                 >
                   {name.charAt(0).toUpperCase() + name.slice(1)}

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadDeploymentCommit, type RecentCommit } from '../data/githubCommits'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
@@ -20,6 +20,23 @@ const developmentCommitDetails = {
   summary: 'Development build · unavailable',
   additions: '+—',
   deletions: '-—',
+}
+type FooterTooltipPlacement = { left: number; bottom?: number; top?: number }
+
+function getFooterTooltipPlacement(trigger: HTMLElement, tooltipId: string): FooterTooltipPlacement {
+  const tooltip = document.getElementById(tooltipId)
+  const bounds = trigger.getBoundingClientRect()
+  const maxWidth = Math.max(0, window.innerWidth - 16)
+  const width = Math.min(tooltip?.scrollWidth ?? 0, maxWidth)
+  const height = tooltip?.scrollHeight ?? 0
+  const left = Math.min(
+    Math.max(bounds.left + bounds.width / 2 - width / 2, 8),
+    Math.max(8, window.innerWidth - width - 8),
+  )
+  if (bounds.top < height + 16) {
+    return { left, top: Math.min(Math.max(8, bounds.bottom + 8), Math.max(8, window.innerHeight - height - 8)) }
+  }
+  return { left, bottom: Math.max(8, window.innerHeight - bounds.top + 8) }
 }
 const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE?.trim() || 'kasu724'
 const goatCounterTotalPath = 'TOTAL'
@@ -62,57 +79,6 @@ function deploymentCommitDetails(commit: RecentCommit | null) {
     summary: `${commit.message} · ${date}`,
     additions: `+${additions}`,
     deletions: `-${deletions}`,
-  }
-}
-
-type FooterTooltipPosition = {
-  atEdge: boolean
-  maxWidth: number | null
-  right: number
-}
-
-const initialFooterTooltipPosition: FooterTooltipPosition = {
-  atEdge: true,
-  maxWidth: null,
-  right: 0,
-}
-
-function getFooterTooltipPosition(tooltip: HTMLSpanElement | null): FooterTooltipPosition | null {
-  const trigger = tooltip?.parentElement
-  const footer = tooltip?.closest<HTMLElement>('.site-footer')
-  if (!tooltip || !trigger || !footer) return null
-
-  const triggerBounds = trigger.getBoundingClientRect()
-  const footerBounds = footer.getBoundingClientRect()
-  const tooltipBorderOffset = 24
-  const tooltipRightBoundary = Math.min(
-    footerBounds.right + tooltipBorderOffset,
-    window.innerWidth - tooltipBorderOffset,
-  )
-  const tooltipMaxWidth = tooltipRightBoundary - footerBounds.left
-
-  const tooltipWidth = Math.min(tooltip.scrollWidth, tooltipMaxWidth)
-  const centeredLeft = triggerBounds.left + (triggerBounds.width / 2) - (tooltipWidth / 2)
-  const centeredRight = centeredLeft + tooltipWidth
-  const crossesPageEdge = centeredLeft < footerBounds.left || centeredRight > tooltipRightBoundary
-
-  return {
-    atEdge: crossesPageEdge,
-    maxWidth: tooltipMaxWidth,
-    right: triggerBounds.right - tooltipRightBoundary,
-  }
-}
-
-function tooltipPositionsMatch(left: FooterTooltipPosition, right: FooterTooltipPosition) {
-  return left.atEdge === right.atEdge
-    && left.maxWidth === right.maxWidth
-    && left.right === right.right
-}
-
-function footerTooltipStyle(position: FooterTooltipPosition): CSSProperties {
-  return {
-    maxWidth: position.maxWidth === null ? undefined : `${position.maxWidth}px`,
-    right: position.atEdge ? `${position.right}px` : undefined,
   }
 }
 
@@ -224,55 +190,63 @@ function SiteFooter() {
       ? getCachedRecentCommits().find((commit) => commit.sha === deploymentCommitSha) ?? null
       : null
   ))
-  const deploymentTooltipRef = useRef<HTMLSpanElement>(null)
-  const developmentTooltipRef = useRef<HTMLSpanElement>(null)
-  const statusTooltipRef = useRef<HTMLSpanElement>(null)
-  const [deploymentTooltipPosition, setDeploymentTooltipPosition] = useState(initialFooterTooltipPosition)
-  const [developmentTooltipPosition, setDevelopmentTooltipPosition] = useState(initialFooterTooltipPosition)
-  const [statusTooltipPosition, setStatusTooltipPosition] = useState(initialFooterTooltipPosition)
+  const footerRef = useRef<HTMLElement>(null)
+  const [compact, setCompact] = useState(false)
+  const [openTooltip, setOpenTooltip] = useState<string | null>(null)
+  const [tooltipPlacement, setTooltipPlacement] = useState<FooterTooltipPlacement>({ left: 8, bottom: 64 })
 
   const serviceValues = Object.values(status)
   const servicesHealthy = serviceValues.every((health) => health === true)
   const serviceFailed = serviceValues.some((health) => health === false)
   const serviceState = servicesHealthy ? 'nominal' : serviceFailed ? 'degraded' : 'checking'
-  const deploymentTooltipDetails = deploymentCommitDetails(deploymentCommitInfo)
+  const deploymentTooltipDetails = isDeployedBuild
+    ? deploymentCommitDetails(deploymentCommitInfo)
+    : developmentCommitDetails
 
-  useLayoutEffect(() => {
-    function updateTooltipPositions() {
-      const deploymentPosition = getFooterTooltipPosition(deploymentTooltipRef.current)
-      const developmentPosition = getFooterTooltipPosition(developmentTooltipRef.current)
-      const statusPosition = getFooterTooltipPosition(statusTooltipRef.current)
+  const openTooltipFor = (key: string, tooltipId: string, trigger: HTMLElement) => {
+    setTooltipPlacement(getFooterTooltipPlacement(trigger, tooltipId))
+    setOpenTooltip(key)
+  }
 
-      if (deploymentPosition) {
-        setDeploymentTooltipPosition((currentPosition) => (
-          tooltipPositionsMatch(currentPosition, deploymentPosition)
-            ? currentPosition
-            : deploymentPosition
-        ))
-      }
+  useEffect(() => {
+    const footer = footerRef.current
+    const inner = footer?.querySelector<HTMLElement>('.site-footer__inner')
+    const measure = footer?.querySelector<HTMLElement>('.site-footer__measure .site-footer__inner')
+    if (!footer || !inner || !measure) return undefined
 
-      if (developmentPosition) {
-        setDevelopmentTooltipPosition((currentPosition) => (
-          tooltipPositionsMatch(currentPosition, developmentPosition)
-            ? currentPosition
-            : developmentPosition
-        ))
-      }
+    const update = () => {
+      const next = measure.scrollWidth > inner.clientWidth + 1
+      setCompact((current) => (current === next ? current : next))
+    }
+    const observer = new ResizeObserver(update)
+    observer.observe(inner)
+    observer.observe(measure)
+    void document.fonts?.ready.then(update)
+    return () => observer.disconnect()
+  }, [])
 
-      if (statusPosition) {
-        setStatusTooltipPosition((currentPosition) => (
-          tooltipPositionsMatch(currentPosition, statusPosition)
-            ? currentPosition
-            : statusPosition
-        ))
+  useEffect(() => {
+    if (!openTooltip) return undefined
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpenTooltip(null)
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      if (!(event.target as Element).closest('.site-footer__identity-trigger, .site-footer__status-trigger, .site-footer__metric, .site-footer__commit, .site-footer__social-link')) {
+        setOpenTooltip(null)
       }
     }
-
-    updateTooltipPositions()
-    window.addEventListener('resize', updateTooltipPositions)
-
-    return () => window.removeEventListener('resize', updateTooltipPositions)
-  }, [deploymentCommitInfo, status, viewCount])
+    const dismissOnViewportChange = () => setOpenTooltip(null)
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('resize', dismissOnViewportChange)
+    window.addEventListener('scroll', dismissOnViewportChange, true)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('resize', dismissOnViewportChange)
+      window.removeEventListener('scroll', dismissOnViewportChange, true)
+    }
+  }, [openTooltip])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -341,36 +315,42 @@ function SiteFooter() {
     }
   }, [])
 
+  const serviceSummary = servicesHealthy ? 'All Services Nominal' : serviceFailed ? 'Service Issue Detected' : 'Checking Services'
+  const serviceTooltipOpen = openTooltip === 'services'
+  const duration = formatDuration(timeOnSite)
+  const views = viewCount?.toLocaleString() ?? '—'
+
   return (
-    <footer className="site-footer">
+    <footer ref={footerRef} className={`site-footer${compact ? ' site-footer--compact' : ''}`}>
       <div className="site-footer__inner">
         <div className="site-footer__identity">
-          <span>{new Date().getFullYear()} Kevin Lui</span>
-          <span
-            className="site-footer__status-trigger"
-            tabIndex={0}
+          <button type="button" className={`site-footer__identity-trigger${openTooltip === 'identity' ? ' is-tooltip-open' : ''}`} aria-label={`Site by Kevin Lui, ${new Date().getFullYear()}`} aria-describedby="footer-identity-tooltip" aria-expanded={openTooltip === 'identity'} onPointerEnter={(event) => { if (event.pointerType === 'mouse') openTooltipFor('identity', 'footer-identity-tooltip', event.currentTarget) }} onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.matches(':focus')) setOpenTooltip(null) }} onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) openTooltipFor('identity', 'footer-identity-tooltip', event.currentTarget) }} onBlur={() => setOpenTooltip(null)} onClick={(event) => openTooltipFor('identity', 'footer-identity-tooltip', event.currentTarget)}>
+            <span className="site-footer__identity-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4a3.2 3.2 0 1 1 0 6.4A3.2 3.2 0 0 1 12 6Zm0 13.1a7.1 7.1 0 0 1-5.3-2.4c.1-2.1 3.5-3.3 5.3-3.3s5.2 1.2 5.3 3.3a7.1 7.1 0 0 1-5.3 2.4Z" /></svg></span>
+            <span className="site-footer__identity-label">{new Date().getFullYear()} Kevin Lui</span>
+            <span id="footer-identity-tooltip" className="site-footer__value-tooltip" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>Site by Kevin Lui · {new Date().getFullYear()}</span>
+          </button>
+          <button
+            type="button"
+            className={`site-footer__status-trigger${serviceTooltipOpen ? ' is-tooltip-open' : ''}`}
+            aria-label={`Service status: ${serviceSummary}`}
             aria-describedby="service-status-tooltip"
+            aria-expanded={serviceTooltipOpen}
+            onClick={(event) => openTooltipFor('services', 'service-status-tooltip', event.currentTarget)}
+            onPointerEnter={(event) => { if (event.pointerType === 'mouse') openTooltipFor('services', 'service-status-tooltip', event.currentTarget) }}
+            onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.matches(':focus')) setOpenTooltip(null) }}
+            onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) openTooltipFor('services', 'service-status-tooltip', event.currentTarget) }}
+            onBlur={() => setOpenTooltip(null)}
           >
-            <span
-              className={`site-footer__status site-footer__status--${serviceState}`}
-              role="status"
-              aria-live="polite"
-            >
+            <span className={`site-footer__status site-footer__status--${serviceState}`} role="status" aria-live="polite">
               <span className="site-footer__status-dot" aria-hidden="true" />
-              {servicesHealthy ? 'All Services Nominal' : serviceFailed ? 'Service Issue Detected' : 'Checking Services'}
+              <span className="site-footer__status-label">{serviceSummary}</span>
             </span>
-            <span
-              id="service-status-tooltip"
-              className={`site-footer__status-tooltip${statusTooltipPosition.atEdge ? ' site-footer__status-tooltip--edge' : ''}`}
-              ref={statusTooltipRef}
-              role="tooltip"
-              style={footerTooltipStyle(statusTooltipPosition)}
-            >
+            <span id="service-status-tooltip" className="site-footer__status-tooltip" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>
               <span className="site-footer__status-tooltip-title">Tracked Services</span>
+              <span className="site-footer__status-summary">{serviceSummary}</span>
               <span className="site-footer__status-list" role="list">
                 {trackedServices.map(({ key, label }) => {
                   const health = status[key]
-
                   return (
                     <span className="site-footer__status-item" role="listitem" key={key}>
                       <span>{label}</span>
@@ -378,100 +358,45 @@ function SiteFooter() {
                         <span className="site-footer__service-health-dot" aria-hidden="true" />
                         {serviceHealthLabel(health)}
                       </span>
-                      {key === 'viewCount' && health === false && (
-                        <span className="site-footer__service-note">
-                          ad blocker may affect availability
-                        </span>
-                      )}
+                      {key === 'viewCount' && health === false && <span className="site-footer__service-note">ad blocker may affect availability</span>}
                     </span>
                   )
                 })}
               </span>
             </span>
-          </span>
+          </button>
         </div>
 
         <div className="site-footer__details">
-          <span
-            className="site-footer__metric site-footer__tooltip"
-            data-tooltip="How long you've been on my site"
-          >
-            <span className="site-footer__icon site-footer__clock-icon" aria-hidden="true"><ClockIcon /></span>
-            <span className="sr-only">Time on site:</span> {formatDuration(timeOnSite)}
-          </span>
-          <span
-            className="site-footer__metric site-footer__tooltip"
-            data-tooltip="Number of views on my site"
-          >
-            <span className="site-footer__icon" aria-hidden="true"><EyeIcon /></span>
-            <span className="sr-only">Site views:</span> {viewCount?.toLocaleString() ?? '—'} views
-          </span>
-          {deploymentCommitUrl ? (
-            <a
-              className="site-footer__commit site-footer__tooltip site-footer__tooltip--detail"
-              href={deploymentCommitUrl}
-              target="_blank"
-              rel="noreferrer"
-              data-tooltip="Current deployment commit (click to view)"
-            >
-              <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
-              <span className="sr-only">Deployment commit:</span> {deploymentCommit}
-              <span
-                className={`site-footer__tooltip-detail${deploymentTooltipPosition.atEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
-                ref={deploymentTooltipRef}
-                aria-hidden="true"
-                style={footerTooltipStyle(deploymentTooltipPosition)}
-              >
-                <span>Current deployment commit (click to view)</span>
-                <span>
-                  {deploymentTooltipDetails.summary} ·{' '}
-                  <span className="site-footer__tooltip-additions">{deploymentTooltipDetails.additions}</span>
-                  {' / '}
-                  <span className="site-footer__tooltip-deletions">{deploymentTooltipDetails.deletions}</span>
-                </span>
-              </span>
-            </a>
-          ) : (
-            <span
-              className="site-footer__commit site-footer__tooltip site-footer__tooltip--detail"
-              data-tooltip="Development environment"
-            >
-              <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span>
-              <span className="sr-only">Deployment commit:</span> {deploymentCommit}
-              <span
-                className={`site-footer__tooltip-detail${developmentTooltipPosition.atEdge ? ' site-footer__tooltip-detail--edge' : ''}`}
-                ref={developmentTooltipRef}
-                aria-hidden="true"
-                style={footerTooltipStyle(developmentTooltipPosition)}
-              >
-                <span>Development environment</span>
-                <span>
-                  {developmentCommitDetails.summary} ·{' '}
-                  <span className="site-footer__tooltip-additions">{developmentCommitDetails.additions}</span>
-                  {' / '}
-                  <span className="site-footer__tooltip-deletions">{developmentCommitDetails.deletions}</span>
-                </span>
-              </span>
+          <button type="button" className={`site-footer__metric site-footer__tooltip${openTooltip === 'time' ? ' is-tooltip-open' : ''}`} aria-label={`Time on site: ${duration}`} aria-describedby="footer-time-tooltip" onPointerEnter={(event) => { if (event.pointerType === 'mouse') openTooltipFor('time', 'footer-time-tooltip', event.currentTarget) }} onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.matches(':focus')) setOpenTooltip(null) }} onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) openTooltipFor('time', 'footer-time-tooltip', event.currentTarget) }} onBlur={() => setOpenTooltip(null)} onClick={(event) => openTooltipFor('time', 'footer-time-tooltip', event.currentTarget)}>
+            <span className="site-footer__icon site-footer__clock-icon" aria-hidden="true"><ClockIcon /></span><span className="site-footer__metric-label"><span className="sr-only">Time on site: </span>{duration}</span>
+            <span id="footer-time-tooltip" className="site-footer__value-tooltip" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>Time on site: {duration}</span>
+          </button>
+          <button type="button" className={`site-footer__metric site-footer__tooltip${openTooltip === 'views' ? ' is-tooltip-open' : ''}`} aria-label={`Site views: ${views}`} aria-describedby="footer-views-tooltip" onPointerEnter={(event) => { if (event.pointerType === 'mouse') openTooltipFor('views', 'footer-views-tooltip', event.currentTarget) }} onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.matches(':focus')) setOpenTooltip(null) }} onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) openTooltipFor('views', 'footer-views-tooltip', event.currentTarget) }} onBlur={() => setOpenTooltip(null)} onClick={(event) => openTooltipFor('views', 'footer-views-tooltip', event.currentTarget)}>
+            <span className="site-footer__icon" aria-hidden="true"><EyeIcon /></span><span className="site-footer__metric-label"><span className="sr-only">Site views: </span>{views} views</span>
+            <span id="footer-views-tooltip" className="site-footer__value-tooltip" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>Site views: {views}</span>
+          </button>
+          <a className={`site-footer__commit site-footer__tooltip site-footer__tooltip--detail${openTooltip === 'commit' ? ' is-tooltip-open' : ''}`} href={deploymentCommitUrl ?? '#'} target={deploymentCommitUrl ? '_blank' : undefined} rel={deploymentCommitUrl ? 'noreferrer' : undefined} aria-label={`Deployment commit ${deploymentCommit}${deploymentCommitUrl ? ', open commit on GitHub' : ''}`} aria-describedby="footer-commit-tooltip" onPointerEnter={(event) => { if (event.pointerType === 'mouse') openTooltipFor('commit', 'footer-commit-tooltip', event.currentTarget) }} onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.matches(':focus')) setOpenTooltip(null) }} onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) openTooltipFor('commit', 'footer-commit-tooltip', event.currentTarget) }} onBlur={() => setOpenTooltip(null)} onClick={(event) => { if (!deploymentCommitUrl || (compact && event.detail > 0 && openTooltip !== 'commit')) { event.preventDefault(); openTooltipFor('commit', 'footer-commit-tooltip', event.currentTarget) } }}>
+            <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span><span className="site-footer__metric-label"><span className="sr-only">Deployment commit: </span>{deploymentCommit}</span>
+            <span id="footer-commit-tooltip" className="site-footer__tooltip-detail" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>
+              <span>{deploymentCommitUrl ? 'Current deployment commit' : 'Development environment'}</span>
+              <span>SHA: {isDeployedBuild ? deploymentCommitSha : 'dev'}</span>
+              <span>{deploymentTooltipDetails.summary} · <span className="site-footer__tooltip-additions">{deploymentTooltipDetails.additions}</span>{' / '}<span className="site-footer__tooltip-deletions">{deploymentTooltipDetails.deletions}</span></span>
             </span>
-          )}
-          <a
-            className="site-footer__social-link"
-            href={socialLinks.github}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="GitHub profile"
-          >
-            <GithubIcon />
           </a>
-          <a
-            className="site-footer__social-link"
-            href={socialLinks.linkedin}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="LinkedIn profile"
-          >
-            <LinkedinIcon />
-          </a>
+          <a className={`site-footer__social-link site-footer__tooltip${openTooltip === 'github' ? ' is-tooltip-open' : ''}`} href={socialLinks.github} target="_blank" rel="noreferrer" aria-label="GitHub profile" aria-describedby="footer-github-tooltip" onPointerEnter={(event) => { if (event.pointerType === 'mouse') openTooltipFor('github', 'footer-github-tooltip', event.currentTarget) }} onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.matches(':focus')) setOpenTooltip(null) }} onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) openTooltipFor('github', 'footer-github-tooltip', event.currentTarget) }} onBlur={() => setOpenTooltip(null)} onClick={(event) => { if (compact && event.detail > 0 && openTooltip !== 'github') { event.preventDefault(); openTooltipFor('github', 'footer-github-tooltip', event.currentTarget) } }}><GithubIcon /><span id="footer-github-tooltip" className="site-footer__value-tooltip" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>GitHub profile · Open profile</span></a>
+          <a className={`site-footer__social-link site-footer__tooltip${openTooltip === 'linkedin' ? ' is-tooltip-open' : ''}`} href={socialLinks.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn profile" aria-describedby="footer-linkedin-tooltip" onPointerEnter={(event) => { if (event.pointerType === 'mouse') openTooltipFor('linkedin', 'footer-linkedin-tooltip', event.currentTarget) }} onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.matches(':focus')) setOpenTooltip(null) }} onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) openTooltipFor('linkedin', 'footer-linkedin-tooltip', event.currentTarget) }} onBlur={() => setOpenTooltip(null)} onClick={(event) => { if (compact && event.detail > 0 && openTooltip !== 'linkedin') { event.preventDefault(); openTooltipFor('linkedin', 'footer-linkedin-tooltip', event.currentTarget) } }}><LinkedinIcon /><span id="footer-linkedin-tooltip" className="site-footer__value-tooltip" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>LinkedIn profile · Open profile</span></a>
+        </div>
+      </div>
+      <div className="site-footer__measure" aria-hidden="true">
+        <div className="site-footer__inner">
+          <div className="site-footer__identity"><span>{new Date().getFullYear()} Kevin Lui</span><span className={`site-footer__status site-footer__status--${serviceState}`}><span className="site-footer__status-dot" />{serviceSummary}</span></div>
+          <div className="site-footer__details">
+            <span className="site-footer__metric"><span className="site-footer__icon"><ClockIcon /></span>{duration}</span>
+            <span className="site-footer__metric"><span className="site-footer__icon"><EyeIcon /></span>{views} views</span>
+            <span className="site-footer__commit"><span className="site-footer__icon"><CommitIcon /></span>{deploymentCommit}</span>
+            <span className="site-footer__social-link"><GithubIcon /></span><span className="site-footer__social-link"><LinkedinIcon /></span>
+          </div>
         </div>
       </div>
     </footer>

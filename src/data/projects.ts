@@ -81,7 +81,7 @@ export const projects: Project[] = [
     sourceUrl: 'https://github.com/Kasu724/Godot2DCharacterController',
   },
   {
-    title: '\"A Platformer...?\" Game Jam',
+    title: '"A Platformer...?" Game Jam',
     description: 'My submission for the Brackeys Game Jam 2025.1, a short 2D platformer game built in Godot',
     highlights: [
       'Engineered and shipped a modular **Godot** game with **OOP** and reusable systems for player movement, dialogue, checkpoints, scene transitions, and physics objects',
