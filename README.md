@@ -82,7 +82,7 @@ The production build is written to `dist/` and includes the five HTML entry poin
 | `npm run build` | Synchronize food photos, type-check, and create a production build |
 | `npm run preview` | Preview the production build locally |
 | `npm run lint` | Run ESLint |
-| `npm run food:sync` | Process and upload new food photos |
+| `npm run food:sync` | Upload new food photos and remove deleted ones |
 
 ## Managing content
 
@@ -110,6 +110,10 @@ To publish a resume, add it at `public/data/resume.pdf`. The `/resume/` page wil
 4. Include a valid `YYYY-MM-DD` date before a photo appears in the gallery.
 
 The sync script uploads originals to Cloudflare R2, generates 400px and 800px WebP thumbnails, and skips objects that already exist. Gallery cards load responsive thumbnails; opening a card loads the full original.
+
+To remove a photo, delete its source from `public/images/food/` while `npm run dev` is running, or delete it and run `npm run food:sync`. The sync deletes the original and both thumbnails from R2, then removes the entry from `src/data/foodPhotos.ts`.
+
+Run one sync with your local photos in place to initialize the ignored `.food-photo-sync.local` inventory. Each checkout uses its own inventory to detect deletions, so photos that were already absent when you started syncing are preserved.
 
 R2 credentials live only in the ignored `.env.local` file, so they do not follow a clone to another computer. Before adding photos on a new computer, copy `.env.example` to `.env.local` and restore all five `R2_*` values from secure storage. Do not commit `.env.local`. The sync command now stops instead of creating undeployable local image references when those credentials are unavailable.
 

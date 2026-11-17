@@ -44,12 +44,19 @@ export default defineConfig(({ command }) => {
           let syncTimer: ReturnType<typeof setTimeout> | undefined
 
           server.watcher.add(fromRoot('public/images/food'))
-          server.watcher.on('add', (filePath) => {
+          server.watcher.on('all', (event, filePath) => {
+            if (event !== 'add' && event !== 'unlink' && event !== 'unlinkDir') return
             const normalizedFilePath = filePath.replaceAll('\\', '/').toLowerCase()
 
             if (normalizedFilePath.startsWith(`${normalizedFoodDirectory}/`)) {
               clearTimeout(syncTimer)
-              syncTimer = setTimeout(syncFoodPhotos, 500)
+              syncTimer = setTimeout(() => {
+                try {
+                  syncFoodPhotos()
+                } catch {
+                  server.config.logger.error('Food photo sync failed. Run npm run food:sync to retry.')
+                }
+              }, 500)
             }
           })
           server.httpServer?.once('close', () => clearTimeout(syncTimer))
