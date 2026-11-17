@@ -68,7 +68,7 @@
   translate: none;
   transform: none;
   width: max-content;
-  max-width: calc(100vw - 1rem);
+  max-width: calc(100% - 1rem);
   box-sizing: border-box;
   overflow-wrap: anywhere;
   white-space: normal;
@@ -80,7 +80,7 @@
 }
 
 .site-footer__status-tooltip {
-  width: min(19rem, calc(100vw - 1rem));
+  width: min(19rem, calc(100% - 1rem));
   padding: var(--space-4);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -104,19 +104,11 @@
 }
 
 .site-footer__value-tooltip { text-align: center; }
-.site-footer__tooltip-detail { text-align: left; }
+.site-footer__tooltip-detail {
+  max-width: min(22rem, calc(100% - 1rem));
+  text-align: left;
+}
 .site-footer__tooltip-detail > span { display: block; }
-
-/* Hide the legacy CSS-generated tips; all visible tips are explicit, accessible nodes. */
-.site-footer .site-footer__tooltip::after { content: none !important; display: none !important; }
-.site-footer .site-footer__status-trigger:is(:hover, :focus-visible):not(.is-tooltip-open) .site-footer__status-tooltip {
-  opacity: 0;
-  visibility: hidden;
-}
-.site-footer .site-footer__tooltip:is(:hover, :focus-visible):not(.is-tooltip-open) .site-footer__tooltip-detail {
-  opacity: 0;
-  visibility: hidden;
-}
 
 .site-footer__status-trigger.is-tooltip-open .site-footer__status-tooltip,
 .site-footer__metric.is-tooltip-open .site-footer__value-tooltip,

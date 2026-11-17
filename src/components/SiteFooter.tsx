@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { socialLinks } from '../data/socialLinks'
 import { getCachedRecentCommits, loadDeploymentCommit, type RecentCommit } from '../data/githubCommits'
 import { deploymentCommit as deploymentCommitSha } from 'virtual:site-metadata'
@@ -26,12 +26,13 @@ type FooterTooltipPlacement = { left: number; bottom?: number; top?: number }
 function getFooterTooltipPlacement(trigger: HTMLElement, tooltipId: string): FooterTooltipPlacement {
   const tooltip = document.getElementById(tooltipId)
   const bounds = trigger.getBoundingClientRect()
-  const maxWidth = Math.max(0, window.innerWidth - 16)
-  const width = Math.min(tooltip?.scrollWidth ?? 0, maxWidth)
-  const height = tooltip?.scrollHeight ?? 0
+  const tooltipBounds = tooltip?.getBoundingClientRect()
+  const viewportWidth = document.documentElement.clientWidth
+  const width = tooltipBounds?.width ?? 0
+  const height = tooltipBounds?.height ?? 0
   const left = Math.min(
     Math.max(bounds.left + bounds.width / 2 - width / 2, 8),
-    Math.max(8, window.innerWidth - width - 8),
+    Math.max(8, viewportWidth - width - 8),
   )
   if (bounds.top < height + 16) {
     return { left, top: Math.min(Math.max(8, bounds.bottom + 8), Math.max(8, window.innerHeight - height - 8)) }
@@ -194,6 +195,7 @@ function SiteFooter() {
   const [compact, setCompact] = useState(false)
   const [openTooltip, setOpenTooltip] = useState<string | null>(null)
   const [tooltipPlacement, setTooltipPlacement] = useState<FooterTooltipPlacement>({ left: 8, bottom: 64 })
+  const activeTooltipRef = useRef<{ trigger: HTMLElement; tooltipId: string } | null>(null)
 
   const serviceValues = Object.values(status)
   const servicesHealthy = serviceValues.every((health) => health === true)
@@ -204,9 +206,32 @@ function SiteFooter() {
     : developmentCommitDetails
 
   const openTooltipFor = (key: string, tooltipId: string, trigger: HTMLElement) => {
+    activeTooltipRef.current = { trigger, tooltipId }
     setTooltipPlacement(getFooterTooltipPlacement(trigger, tooltipId))
     setOpenTooltip(key)
   }
+
+  useLayoutEffect(() => {
+    if (!openTooltip || !activeTooltipRef.current) return undefined
+
+    const { trigger, tooltipId } = activeTooltipRef.current
+    const tooltip = document.getElementById(tooltipId)
+    if (!tooltip) return undefined
+
+    const updatePlacement = () => {
+      const next = getFooterTooltipPlacement(trigger, tooltipId)
+      setTooltipPlacement((current) => (
+        current.left === next.left && current.top === next.top && current.bottom === next.bottom
+          ? current
+          : next
+      ))
+    }
+    updatePlacement()
+    const observer = new ResizeObserver(updatePlacement)
+    observer.observe(tooltip)
+    observer.observe(trigger)
+    return () => observer.disconnect()
+  }, [openTooltip])
 
   useEffect(() => {
     const footer = footerRef.current
@@ -380,7 +405,7 @@ function SiteFooter() {
             <span className="site-footer__icon" aria-hidden="true"><CommitIcon /></span><span className="site-footer__metric-label"><span className="sr-only">Deployment commit: </span>{deploymentCommit}</span>
             <span id="footer-commit-tooltip" className="site-footer__tooltip-detail" role="tooltip" style={{ left: tooltipPlacement.left, bottom: tooltipPlacement.bottom, top: tooltipPlacement.top }}>
               <span>{deploymentCommitUrl ? 'Current deployment commit' : 'Development environment'}</span>
-              <span>SHA: {isDeployedBuild ? deploymentCommitSha : 'dev'}</span>
+              <span>SHA: {deploymentCommit}</span>
               <span>{deploymentTooltipDetails.summary} · <span className="site-footer__tooltip-additions">{deploymentTooltipDetails.additions}</span>{' / '}<span className="site-footer__tooltip-deletions">{deploymentTooltipDetails.deletions}</span></span>
             </span>
           </a>
