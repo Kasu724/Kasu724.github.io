@@ -20,7 +20,8 @@ function AboutSection() {
             <span className="about-section__sentence">
             I’m a <strong>Computer Science</strong> student at <strong>Stevens Institute of Technology</strong> with minors
             in <strong>Quantitative Finance</strong> and <strong>Mathematics</strong>, and a passion for building scalable
-            software, AI systems, and quantitative tools.
+            software, AI systems, and quantitative tools. I'm also an incoming Summer 2027 SWE intern at
+            <strong> Pinterest</strong>!
             </span>
             <span className="about-section__sentence">
             My experience spans <strong>full-stack engineering</strong>, <strong>AI/ML</strong>, <strong>data engineering</strong>, and
