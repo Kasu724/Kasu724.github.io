@@ -33,7 +33,7 @@ export const foodPhotos: FoodPhoto[] = [
   {
     src: "https://kasu724-food-assets.klui7240.workers.dev/originals/IMG_8308.jpg",
     date: '2026-11-21',
-    caption: 'Hokkaido scallop',
+    caption: 'Hokkaido scallop nigiri',
     restaurant: 'Sendo',
     location: 'New York, NY, USA',
   },
@@ -54,7 +54,7 @@ export const foodPhotos: FoodPhoto[] = [
   {
     src: "https://kasu724-food-assets.klui7240.workers.dev/originals/IMG_8305.jpg",
     date: '2026-11-21',
-    caption: 'Tasmanian cean trout and sawara (Spanish mackerel) nigiri',
+    caption: 'Tasmanian ocean trout and sawara (Spanish mackerel) nigiri',
     restaurant: 'Sendo',
     location: 'New York, NY, USA',
   },
