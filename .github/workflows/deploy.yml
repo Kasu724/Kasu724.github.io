@@ -12,6 +12,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      deployment: false # Read CARTO_API_KEY without creating a deployment record.
     permissions:
       contents: read
       pages: read
