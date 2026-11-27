@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { formatFoodPhotoDate, groupFoodPhotosByMonth } from '../data/foodPhotos'
 import type { DisplayableFoodPhoto, FoodPhotoGroup } from '../types/food'
+import DialogBackdrop from './DialogBackdrop'
 
 const thumbnailWidths = [400, 800] as const
 const initialVisiblePhotoCount = 24
@@ -142,14 +143,7 @@ function FoodPhotoDialog({ photo, isClosing, onClose, onExitComplete }: FoodPhot
   }, [])
 
   return (
-    <div
-      className="food-dialog-backdrop"
-      data-closing={isClosing || undefined}
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
-      }}
-    >
+    <DialogBackdrop className="food-dialog-backdrop" isClosing={isClosing} onClose={onClose}>
       <section
         className="food-dialog"
         data-closing={isClosing || undefined}
@@ -200,7 +194,7 @@ function FoodPhotoDialog({ photo, isClosing, onClose, onExitComplete }: FoodPhot
           <FoodPhotoSummary photo={photo} id={metadataId} className="food-dialog__summary" />
         </div>
       </section>
-    </div>
+    </DialogBackdrop>
   )
 }
 
@@ -231,28 +225,6 @@ function FoodGallery() {
     observer.observe(loadMoreElement)
     return () => observer.disconnect()
   }, [hasMorePhotos, totalPhotoCount])
-
-  useEffect(() => {
-    if (!selectedPhoto) return
-
-    const previousOverflow = document.body.style.overflow
-    const previousPaddingRight = document.body.style.paddingRight
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-    document.body.style.overflow = 'hidden'
-    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsClosing(true)
-    }
-
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      document.body.style.paddingRight = previousPaddingRight
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [selectedPhoto])
 
   function openPhoto(photo: DisplayableFoodPhoto, origin: HTMLButtonElement) {
     previouslyFocusedElement.current = origin

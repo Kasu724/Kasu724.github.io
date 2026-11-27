@@ -180,5 +180,7 @@
   --motion-duration-fast: 160ms;
   --motion-ease-standard: ease;
   --motion-distance-sm: 2px;
+  --dialog-duration: 320ms;
+  --dialog-easing: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

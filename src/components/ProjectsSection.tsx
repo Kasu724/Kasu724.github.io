@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
-import { createPortal } from 'react-dom'
 import { featuredProjects } from '../data/projects'
 import type { Project } from '../types/project'
+import DialogBackdrop from './DialogBackdrop'
 import ProjectCard, { ProjectCardContent, ProjectLinks } from './ProjectCard'
 import { renderHighlight } from './highlightText'
 import { useProjectDialog, type DialogOrigin } from './useProjectDialog'
@@ -189,15 +189,8 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
 
   const highlights = project.highlights?.length ? project.highlights : [project.description]
 
-  return createPortal(
-    <div
-      className="project-dialog-backdrop"
-      data-closing={isClosing || undefined}
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
-      }}
-    >
+  return (
+    <DialogBackdrop className="project-dialog-backdrop" isClosing={isClosing} onClose={onClose}>
       <section
         ref={dialogRef}
         className={`project-dialog${isPositioned ? ' project-dialog--positioned' : ''}`}
@@ -223,19 +216,21 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
           if (!isClosing && event.animationName === 'project-dialog-open') setIsOpenComplete(true)
         }}
       >
+        <button
+          ref={closeButtonRef}
+          className="project-dialog__close"
+          type="button"
+          aria-label="Close project details"
+          onClick={onClose}
+        >
+          ×
+        </button>
         <div className="project-dialog__content-stack">
           <div className="project-dialog__content project-dialog__content--expanded">
-            <button
-              ref={closeButtonRef}
-              className="project-dialog__close"
-              type="button"
-              aria-label="Close project details"
-              onClick={onClose}
-            >
-              ×
-            </button>
-            <h3 id={titleId}>{project.title}</h3>
-            <p className="project-dialog__description">{project.description}</p>
+            <div className="project-dialog__header">
+              <h3 id={titleId}>{project.title}</h3>
+              <p className="project-dialog__description">{project.description}</p>
+            </div>
             <div className="project-card__technologies project-dialog__technologies">
               <h4>Technologies</h4>
               <ul>
@@ -258,8 +253,7 @@ export function ProjectDialog({ project, onClose, onExitComplete, origin, isClos
         </div>
         <ProjectLinks project={project} className="project-dialog__links" />
       </section>
-    </div>,
-    document.body,
+    </DialogBackdrop>
   )
 }
 
